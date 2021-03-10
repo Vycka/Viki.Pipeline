@@ -11,16 +11,38 @@ namespace Viki.Pipeline.Core.Extensions
 {
     public static class ConsumerExtensions
     {
-        public static IEnumerable<T> ToEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100)
+        public static IEnumerable<T[]> ToBatchedEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100)
         {
             while (consumer.Available)
             {
-                IReadOnlyList<T> batch;
+                ICollection<T> batch;
                 while (consumer.TryLockBatch(out batch))
                 {
                     for (int i = 0; i < batch.Count; i++)
                     {
-                        yield return batch[i];
+                        T[] resultCopy = new T[batch.Count];
+                        batch.CopyTo(resultCopy, 0);
+
+                        yield return resultCopy;
+                    }
+
+                    consumer.ReleaseBatch();
+                }
+
+                Thread.Sleep(pollingDelayMilliseconds);
+            }
+        }
+
+        public static IEnumerable<T> ToEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100)
+        {
+            while (consumer.Available)
+            {
+                ICollection<T> batch;
+                while (consumer.TryLockBatch(out batch))
+                {
+                    foreach (T item in batch)
+                    {
+                        yield return item;
                     }
 
                     consumer.ReleaseBatch();
@@ -34,12 +56,12 @@ namespace Viki.Pipeline.Core.Extensions
         {
             while (consumer.Available)
             {
-                IReadOnlyList<T> batch;
+                ICollection<T> batch;
                 while (consumer.TryLockBatch(out batch))
                 {
-                    for (int i = 0; i < batch.Count; i++)
+                    foreach (T item in batch)
                     {
-                        yield return batch[i];
+                        yield return item;
                     }
 
                     consumer.ReleaseBatch();

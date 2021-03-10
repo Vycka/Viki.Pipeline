@@ -4,7 +4,7 @@ namespace Viki.Pipeline.Core.Interfaces
 {
     public interface IConsumer<T>
     {
-        bool TryLockBatch(out IReadOnlyList<T> batch);
+        bool TryLockBatch(out ICollection<T> batch);
 
         void ReleaseBatch();
 

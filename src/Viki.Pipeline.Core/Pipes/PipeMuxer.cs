@@ -68,7 +68,7 @@ namespace Viki.Pipeline.Core.Pipes
 
         public bool Available => !_completed || _consumers.Count != 0 || _buffer.Count != 0 || _addQueue.IsEmpty == false;
 
-        public bool TryLockBatch(out IReadOnlyList<T> batch)
+        public bool TryLockBatch(out ICollection<T> batch)
         {
             _buffer.AddRange(TryRead().SelectMany(r => r));
 
@@ -88,7 +88,7 @@ namespace Viki.Pipeline.Core.Pipes
 
         #endregion
 
-        private IEnumerable<IReadOnlyList<T>> TryRead()
+        private IEnumerable<ICollection<T>> TryRead()
         {
             while (!_addQueue.IsEmpty && _addQueue.TryDequeue(out var consumer))
                 _consumers.Add(consumer);

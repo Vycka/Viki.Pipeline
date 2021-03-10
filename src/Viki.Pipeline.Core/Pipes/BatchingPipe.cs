@@ -25,7 +25,7 @@ namespace Viki.Pipeline.Core.Pipes
 
         public bool Available => !_completed || _readOnlyList.Count != 0 || _writeOnlyList.Count != 0;
 
-        public bool TryLockBatch(out IReadOnlyList<T> batch)
+        public bool TryLockBatch(out ICollection<T> batch)
         {
             bool result = false;
 
