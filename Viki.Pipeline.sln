@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Viki.Pipeline.Core", "src\Viki.Pipeline.Core\Viki.Pipeline.Core.csproj", "{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FE07E5D5-C205-41DD-9D19-0EB5F805717E}
+	EndGlobalSection
+EndGlobal
