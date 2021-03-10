@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Viki.Pipeline.Core.Pipes.Interfaces;
+using Viki.Pipeline.Core.Interfaces;
+using Viki.Pipeline.Core.Streams;
+using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Extensions
 {
@@ -40,12 +43,9 @@ namespace Viki.Pipeline.Core.Extensions
             }
         }
 
-        public static void Produce<T>(this IProducer<T> producer, IEnumerable<T> items)
+        public static Stream ToWriteOnlyStream(this IProducer<Packet> producer)
         {
-            foreach (T item in items)
-            {
-                producer.Produce(item);
-            }
+            return new ProducerStreamAdapter(producer);
         }
     }
 }

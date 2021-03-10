@@ -64,7 +64,7 @@ namespace Viki.Pipeline.Core.Streams
 
             return bytesRead;
         }
-
+        
         // Called from Stream's base Dispose
         protected override void Dispose(bool disposing)
         {

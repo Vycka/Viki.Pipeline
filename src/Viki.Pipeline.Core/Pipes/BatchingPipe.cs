@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using Viki.Pipeline.Core.Pipes.Interfaces;
+using Viki.Pipeline.Core.Interfaces;
 
 namespace Viki.Pipeline.Core.Pipes
 {
-    public class BatchingPipe<T> : IProducer<T>, IConsumer<T>
+    public class BatchingPipe<T> : IPipe<T>
     {
         private bool _completed;
 
@@ -21,7 +21,6 @@ namespace Viki.Pipeline.Core.Pipes
                 _writeOnlyList = new List<T>();
                 _readOnlyList = new List<T>();
             }
-
         }
 
         public bool Available => !_completed || _readOnlyList.Count != 0 || _writeOnlyList.Count != 0;

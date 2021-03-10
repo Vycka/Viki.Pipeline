@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Viki.Pipeline.Core.Pipes.Interfaces
+namespace Viki.Pipeline.Core.Interfaces
 {
     public interface IProducer<T>
     {
@@ -14,8 +14,8 @@ namespace Viki.Pipeline.Core.Pipes.Interfaces
         /// Produce enumerable list of items.
         /// Using this implementation with underlying implementation is ICollection can yield additional performance gains.
         /// </summary>
-        /// <param name="item">collection of items to produce</param>
-        void Produce(IEnumerable<T> item);
+        /// <param name="items">collection of items to produce</param>
+        void Produce(IEnumerable<T> items);
 
         /// <summary>
         /// Signals collection that no more items will be produced.

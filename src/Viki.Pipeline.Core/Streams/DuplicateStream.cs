@@ -4,8 +4,9 @@ using Viki.Pipeline.Core.Streams.Base;
 namespace Viki.Pipeline.Core.Streams
 {
     /// <summary>
-    ///  Wraps passed stream exposing it as unbuffered readonly stream.
-    ///  while wrapped stream is being read, a copy of its data is pushed into passed writable stream.
+    /// Wraps passed stream exposing it as unbuffered readonly stream.
+    /// while wrapped stream is being read, a copy of its data is pushed into passed writable stream.
+    /// If write stream blocks, it will block read of current stream too.
     /// </summary>
     public class DuplicateStream : UnbufferedReadOnlyStreamBase
     {

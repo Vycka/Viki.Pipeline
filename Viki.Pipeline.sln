@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Viki.Pipeline.Core", "src\Viki.Pipeline.Core\Viki.Pipeline.Core.csproj", "{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Viki.Pipeline.Core", "src\Viki.Pipeline.Core\Viki.Pipeline.Core.csproj", "{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5966B7B0-361B-48B0-BE17-3FC911E986AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{459AEF12-BD50-47CA-8D4C-4BB6093F3ECD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Viki.Pipeline.Core.Tests", "tests\Viki.Pipeline.Core.Tests\Viki.Pipeline.Core.Tests.csproj", "{76B4D903-8C0F-4914-8136-3D0CADCB047E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +21,17 @@ Global
 		{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76B4D903-8C0F-4914-8136-3D0CADCB047E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76B4D903-8C0F-4914-8136-3D0CADCB047E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76B4D903-8C0F-4914-8136-3D0CADCB047E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76B4D903-8C0F-4914-8136-3D0CADCB047E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F8D156DB-3D07-47E2-AEC2-BCAA128D3AC1} = {5966B7B0-361B-48B0-BE17-3FC911E986AE}
+		{76B4D903-8C0F-4914-8136-3D0CADCB047E} = {459AEF12-BD50-47CA-8D4C-4BB6093F3ECD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FE07E5D5-C205-41DD-9D19-0EB5F805717E}

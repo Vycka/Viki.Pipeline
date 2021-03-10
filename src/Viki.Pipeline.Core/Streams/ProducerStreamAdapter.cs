@@ -2,7 +2,7 @@
 using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
-using Viki.Pipeline.Core.Pipes.Interfaces;
+using Viki.Pipeline.Core.Interfaces;
 using Viki.Pipeline.Core.Streams.Base;
 using Viki.Pipeline.Core.Streams.Components;
 
