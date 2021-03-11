@@ -24,6 +24,8 @@ namespace Viki.Pipeline.Core.Tests
             new Tuple<byte, int>((byte)'e', 300007000),
         };
 
+        public static Stream CreateStream() => new CombinedStream(CreateStreams());
+
         public static Stream[] CreateStreams(params Stream[] additionalStrams) => Structure
             .Select(s => new StreamGenerator(s.Item2, s.Item1))
             .Concat(additionalStrams)
@@ -54,41 +56,49 @@ namespace Viki.Pipeline.Core.Tests
 
         public static void AssertStream(Stream stream, List<Tuple<byte, int>> structure)
         {
-            int totalBytesRead = 0;
-            byte[] buffer = new byte[85000];
-
-            int bytesRead = stream.Read(buffer, 0, 85000);
-            totalBytesRead += bytesRead;
-
-            int currentSymbolCount = 0;
-            int currentScenario = 0;
-
-            while (bytesRead > 0)
+            try
             {
-                for (int i = 0; i < bytesRead; i++)
+                int totalBytesRead = 0;
+                byte[] buffer = new byte[85000];
+
+                int bytesRead = stream.Read(buffer, 0, 85000);
+                totalBytesRead += bytesRead;
+
+                int currentSymbolCount = 0;
+                int currentScenario = 0;
+
+                while (bytesRead > 0)
                 {
-                    int currentByte = buffer[i];
-
-                    if (currentByte == structure[currentScenario].Item1)
+                    for (int i = 0; i < bytesRead; i++)
                     {
-                        currentSymbolCount++;
-                    }
-                    else
-                    {
-                        Assert.AreEqual(structure[currentScenario].Item2, currentSymbolCount, $"Incorrect symbol [{(char)structure[currentScenario].Item1}] count in data");
+                        int currentByte = buffer[i];
 
-                        currentScenario++;
-                        currentSymbolCount = 1;
+                        if (currentByte == structure[currentScenario].Item1)
+                        {
+                            currentSymbolCount++;
+                        }
+                        else
+                        {
+                            Assert.AreEqual(structure[currentScenario].Item2, currentSymbolCount, $"Incorrect symbol [{(char)structure[currentScenario].Item1}] count in data");
+
+                            currentScenario++;
+                            currentSymbolCount = 1;
+                        }
                     }
+
+                    bytesRead = stream.Read(buffer, 0, 85000);
+                    totalBytesRead += bytesRead;
                 }
 
-                bytesRead = stream.Read(buffer, 0, 85000);
-                totalBytesRead += bytesRead;
+
+                Assert.AreEqual(structure[currentScenario].Item2, currentSymbolCount, "Incorrect symbol count in data");
+                Assert.AreEqual(structure.Sum(s => s.Item2), totalBytesRead, "Incorrect total length");
+            }
+            finally
+            {
+                stream.Dispose();
             }
 
-
-            Assert.AreEqual(structure[currentScenario].Item2, currentSymbolCount, "Incorrect symbol count in data");
-            Assert.AreEqual(structure.Sum(s => s.Item2), totalBytesRead, "Incorrect total length");
         }
 
         public static void DebugStream(Stream stream)

@@ -8,7 +8,7 @@ namespace Viki.Pipeline.Core.Streams.Components
     public class Packet : IDisposable
     {
         public readonly int DataLength;
-        public readonly byte[] Data;
+        public byte[] Data { get; private set; } 
 
         private readonly ArrayPool<byte> _arrayPool;
 
@@ -21,7 +21,11 @@ namespace Viki.Pipeline.Core.Streams.Components
 
         public void Dispose()
         {
-            _arrayPool.Return(Data);
+            if (Data != null)
+            {
+                _arrayPool.Return(Data);
+                Data = null;
+            }
         }
 
         public static async Task<Packet> ReadFrom(Stream stream)

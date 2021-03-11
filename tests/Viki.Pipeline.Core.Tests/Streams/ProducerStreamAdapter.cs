@@ -22,7 +22,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
             Task.Run(async () =>
             {
                 await testData.CopyToAsync(sut);
-                _ = sut.DisposeAsync(); // Disposing Adapter will also trigger Completion of IProducer
+                await sut.DisposeAsync(); // Closing/Disposing adapter triggers completion of producer by default.
             });
             
 

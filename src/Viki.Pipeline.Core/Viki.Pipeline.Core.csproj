@@ -2,10 +2,40 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Authors>Vytautas Klumbys</Authors>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/Vycka/Viki.Pipeline</PackageProjectUrl>
+    <Version>0.0.1-preview</Version>
+    <Company />
+    <RepositoryUrl>https://github.com/Vycka/Viki.Pipeline</RepositoryUrl>
+    <Product>Viki.Pipeline</Product>
+    <Description>Collection of tools for moving large amounts of data within the app between threads through streams/enumerables.
+</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReleaseNotes>MvP library version for first battle-tests.
+for now nothings stable, anything can be refactored.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Streams\Interfaces\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -11,12 +11,16 @@ namespace Viki.Pipeline.Core.Streams
     public class DuplicateStream : UnbufferedReadOnlyStreamBase
     {
         private readonly Stream _source;
-        private readonly Stream _duplicateTo;
+        private readonly Stream _destination;
+        private readonly bool _disposeSource;
+        private readonly bool _disposeDestination;
 
-        public DuplicateStream(Stream source, Stream duplicateTo)
+        public DuplicateStream(Stream source, Stream destination, bool disposeSource = true, bool disposeDestination = true)
         {
             _source = source;
-            _duplicateTo = duplicateTo;
+            _destination = destination;
+            _disposeSource = disposeSource;
+            _disposeDestination = disposeDestination;
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -24,9 +28,24 @@ namespace Viki.Pipeline.Core.Streams
             int result = _source.Read(buffer, offset, count);
 
             if (result > 0)
-                _duplicateTo.Write(buffer, offset, result);
+                _destination.Write(buffer, offset, result);
 
             return result;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposeDestination)
+            {
+                _destination.Dispose();
+            }
+
+            if (_disposeSource)
+            {
+                _source.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

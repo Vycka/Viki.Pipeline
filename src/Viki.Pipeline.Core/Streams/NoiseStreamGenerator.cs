@@ -53,6 +53,8 @@ namespace Viki.Pipeline.Core.Streams
                 buffer[i + offset] = (byte)_noiseGenerator.Next();
             }
 
+            _position += bytesToRead;
+
             return bytesToRead;
         }
     }

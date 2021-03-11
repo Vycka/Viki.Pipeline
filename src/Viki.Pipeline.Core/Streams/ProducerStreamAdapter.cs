@@ -11,12 +11,14 @@ namespace Viki.Pipeline.Core.Streams
     public class ProducerStreamAdapter : UnbufferedWriteOnlyStreamBase
     {
         private readonly IProducer<Packet> _producer;
+        private readonly bool _closeProducer;
 
         private static ArrayPool<byte> ArrayPool = ArrayPool<byte>.Shared;
 
-        public ProducerStreamAdapter(IProducer<Packet> producer)
+        public ProducerStreamAdapter(IProducer<Packet> producer, bool closeProducer = true)
         {
             _producer = producer ?? throw new ArgumentNullException(nameof(producer));
+            _closeProducer = closeProducer;
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -25,7 +27,7 @@ namespace Viki.Pipeline.Core.Streams
 
             Array.Copy(buffer, offset, localBuffer, 0, count);
 
-            Packet packet = new Packet(localBuffer, count, NullArrayPool.Instance);
+            Packet packet = new Packet(localBuffer, count, ArrayPool);
 
             _producer.Produce(packet);
         }
@@ -38,16 +40,10 @@ namespace Viki.Pipeline.Core.Streams
             return Task.CompletedTask;
         }
 
-        public override void Close()
-        {
-            _producer.ProducingCompleted();
-
-            base.Close();
-        }
-        
         protected override void Dispose(bool disposing)
         {
-            _producer.ProducingCompleted();
+            if (_closeProducer)
+                _producer.ProducingCompleted();
 
             base.Dispose(disposing);
         }

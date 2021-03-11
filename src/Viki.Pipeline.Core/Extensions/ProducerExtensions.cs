@@ -58,9 +58,9 @@ namespace Viki.Pipeline.Core.Extensions
             }
         }
 
-        public static Stream ToWriteOnlyStream(this IProducer<Packet> producer)
+        public static Stream ToWriteOnlyStream(this IProducer<Packet> producer, bool closeProducer = true)
         {
-            return new ProducerStreamAdapter(producer);
+            return new ProducerStreamAdapter(producer, closeProducer);
         }
     }
 }

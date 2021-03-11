@@ -85,8 +85,6 @@ namespace Viki.Pipeline.Core.Streams
 
         private void HandleStreamDisposing(Stream stream)
         {
-            stream?.Close();
-
             if (_disposeStreams)
             {
                 stream?.Dispose();
