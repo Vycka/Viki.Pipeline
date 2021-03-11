@@ -46,20 +46,16 @@ namespace Viki.Pipeline.Core.Streams
 
             int bytesRead = 0;
 
-            if (IsEnumeratorStreamAvailable())
+            while (bytesRead == 0 && IsEnumeratorStreamAvailable())
             {
-                do
+                Stream currentStream = GetEnumeratorCurrent();
+                bytesRead = currentStream.Read(buffer, offset, count);
+
+                if (bytesRead == 0)
                 {
-                    Stream currentStream = GetEnumeratorCurrent();
-                    bytesRead = currentStream.Read(buffer, offset, count);
-
-                    if (bytesRead == 0)
-                    {
-                        HandleStreamDisposing(currentStream);
-
-                        AdvanceEnumerator();
-                    }
-                } while (bytesRead == 0 && IsEnumeratorStreamAvailable());
+                    HandleStreamDisposing(currentStream);
+                    AdvanceEnumerator();
+                }
             }
 
             return bytesRead;
@@ -70,12 +66,10 @@ namespace Viki.Pipeline.Core.Streams
         {
             EnsureEnumeratorInitialized();
 
-            if (IsEnumeratorStreamAvailable())
+            while (IsEnumeratorStreamAvailable())
             {
-                do
-                {
-                    HandleStreamDisposing(GetEnumeratorCurrent());
-                } while (AdvanceEnumerator());
+                HandleStreamDisposing(GetEnumeratorCurrent());
+                AdvanceEnumerator();
             }
 
             _enumerator.Dispose();
@@ -104,7 +98,7 @@ namespace Viki.Pipeline.Core.Streams
             if (_enumerator == null)
             {
                 _enumerator = _streams.GetEnumerator();
-                _streamAvailable = _enumerator.MoveNext();
+                AdvanceEnumerator();
             }
         }
 

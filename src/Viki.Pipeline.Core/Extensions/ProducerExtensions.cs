@@ -15,6 +15,21 @@ namespace Viki.Pipeline.Core.Extensions
             return ProduceCompleteAsync(producer, items, CancellationToken.None, start);
         }
 
+        public static async Task ProduceCompleteAsync<T>(this IProducer<T> producer, IAsyncEnumerable<T> items)
+        {
+            try
+            {
+                await foreach (T item in items)
+                {
+                    producer.Produce(item);
+                }
+            }
+            finally
+            {
+                producer.ProducingCompleted();
+            }
+        }
+
         public static Task ProduceCompleteAsync<T>(this IProducer<T> producer, IEnumerable<T> items, CancellationToken token, bool start = true)
         {
             Task task = new Task(() => ProduceAndComplete(producer, items, token), token, TaskCreationOptions.LongRunning);

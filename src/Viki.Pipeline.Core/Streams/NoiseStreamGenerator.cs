@@ -30,7 +30,7 @@ namespace Viki.Pipeline.Core.Streams
         }
 
         /// <summary>
-        /// Initialize new instance with random seed
+        /// Initialize new instance with custom seed
         /// </summary>
         /// <param name="size">Size of data in bytes that stream will allow to read before reporting end of stream</param>
         /// <param name="seed">seed to use in System.Random when noise data is generated</param>

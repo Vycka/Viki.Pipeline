@@ -12,7 +12,7 @@ namespace Viki.Pipeline.Core.Streams
     {
         private readonly IProducer<Packet> _producer;
 
-        public ArrayPool<byte> ArrayPool = ArrayPool<byte>.Shared;
+        private static ArrayPool<byte> ArrayPool = ArrayPool<byte>.Shared;
 
         public ProducerStreamAdapter(IProducer<Packet> producer)
         {
@@ -25,17 +25,16 @@ namespace Viki.Pipeline.Core.Streams
 
             Array.Copy(buffer, offset, localBuffer, 0, count);
 
-            Packet packet = new Packet(localBuffer, count, ArrayPool);
+            Packet packet = new Packet(localBuffer, count, NullArrayPool.Instance);
 
             _producer.Produce(packet);
         }
 
+
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            // IProducer sync write operation is cheaper than spawning a task, thus we suppress it.
-
+            // IProducer sync write operation should be cheaper than spawning a task, thus we suppress it.
             Write(buffer, offset, count);
-
             return Task.CompletedTask;
         }
 
@@ -45,7 +44,7 @@ namespace Viki.Pipeline.Core.Streams
 
             base.Close();
         }
-
+        
         protected override void Dispose(bool disposing)
         {
             _producer.ProducingCompleted();
