@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using Viki.Pipeline.Core.Extensions;
 using Viki.Pipeline.Core.Streams;
 using Viki.Pipeline.Core.Streams.Components;
 
@@ -26,11 +27,14 @@ namespace Viki.Pipeline.Core.Tests
 
         public static Stream CreateStream() => new CombinedStream(CreateStreams());
 
+        public static IAsyncEnumerable<Stream> CreateStreamsAsyncEnumerable(params Stream[] additionalStrams) => CreateStreams(additionalStrams)
+            .ToAsyncEnumerable();
+
         public static Stream[] CreateStreams(params Stream[] additionalStrams) => Structure
             .Select(s => new StreamGenerator(s.Item2, s.Item1))
             .Concat(additionalStrams)
             .ToArray();
-
+        
         public static async IAsyncEnumerable<Packet> CreatePackets()
         {
             byte[] trashArray = new byte[3];
@@ -47,8 +51,7 @@ namespace Viki.Pipeline.Core.Tests
                 yield return new Packet(trashArray, 0, NullArrayPool.Instance);
             }
         }
-
-
+        
         public static void AssertStream(Stream stream)
         {
             AssertStream(stream, Structure);

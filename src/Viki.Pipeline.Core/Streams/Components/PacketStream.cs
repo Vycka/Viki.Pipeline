@@ -15,6 +15,8 @@ namespace Viki.Pipeline.Core.Streams.Components
         protected override void Dispose(bool disposing)
         {
             _packet.Dispose();
+
+            base.Dispose(disposing);
         }
     }
 }

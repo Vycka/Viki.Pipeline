@@ -8,6 +8,14 @@ namespace Viki.Pipeline.Core.Extensions
 {
     public static class EnumerableExtensions
     {
+        public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source)
+        {
+            foreach (T item in source)
+            {
+                yield return await Task.FromResult(item);
+            }
+        }
+
         public static IEnumerable<IEnumerable<T>> ToBatchesAsync<T>(this IEnumerable<T> source, int batchSize)
         {
             using IEnumerator<T> enumerator = source.GetEnumerator();

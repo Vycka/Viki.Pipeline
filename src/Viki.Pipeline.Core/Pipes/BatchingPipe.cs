@@ -90,5 +90,7 @@ namespace Viki.Pipeline.Core.Pipes
         {
             _completed = true;
         }
+
+        public long BufferedItems => _writeOnlyList.Count + _readOnlyList.Count;
     }
 }
