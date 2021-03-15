@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Viki.Pipeline.Core.Extensions;
 using Viki.Pipeline.Core.Packets;
@@ -44,11 +45,11 @@ namespace Viki.Pipeline.Core.Tests
                 int splitBytes = scenario.Item2 / 6;
                 int modBytes = scenario.Item2 % 6;
 
-                yield return await Packet.ReadFrom(new StreamGenerator(splitBytes * 3, scenario.Item1));
-                yield return await Packet.ReadFrom(new StreamGenerator(splitBytes * 2, scenario.Item1));
-                yield return await Packet.ReadFrom(new StreamGenerator(splitBytes * 1, scenario.Item1));
-                yield return await Packet.ReadFrom(new StreamGenerator(modBytes, scenario.Item1));
-                yield return new Packet<byte>(trashArray, 0, NullArrayPool.Instance);
+                yield return await ReadFrom(new StreamGenerator(splitBytes * 3, scenario.Item1));
+                yield return await ReadFrom(new StreamGenerator(splitBytes * 2, scenario.Item1));
+                yield return await ReadFrom(new StreamGenerator(splitBytes * 1, scenario.Item1));
+                yield return await ReadFrom(new StreamGenerator(modBytes, scenario.Item1));
+                yield return new Packet<byte>(trashArray, 0);
             }
         }
         
@@ -140,6 +141,16 @@ namespace Viki.Pipeline.Core.Tests
             }
 
             TestContext.WriteLine($"Total: {totalBytesRead}");
+        }
+
+        public static async Task<Packet<byte>> ReadFrom(Stream stream)
+        {
+            MemoryStream localCopy = new MemoryStream();
+
+            await stream.CopyToAsync(localCopy);
+
+            byte[] localCopyBytes = localCopy.ToArray();
+            return new Packet<byte>(localCopyBytes, localCopyBytes.Length, NullArrayPool.Instance);
         }
     }
 }

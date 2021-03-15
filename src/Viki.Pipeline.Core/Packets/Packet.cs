@@ -76,20 +76,5 @@ namespace Viki.Pipeline.Core.Packets
 
             return new Packet<T>(pooledArray, source.Count, arrayPool);
         }
-
-        public static Task<Packet<byte>> ReadFrom(Stream stream)
-        {
-            return ReadFrom(stream, NullArrayPool.Instance);
-        }
-
-        public static async Task<Packet<byte>> ReadFrom(Stream stream, ArrayPool<byte> arrayPool)
-        {
-            MemoryStream localCopy = new MemoryStream();
-
-            await stream.CopyToAsync(localCopy);
-
-            byte[] localCopyBytes = localCopy.ToArray();
-            return new Packet<byte>(localCopyBytes, localCopyBytes.Length, arrayPool);
-        }
     }
 }

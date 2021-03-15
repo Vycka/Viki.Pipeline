@@ -5,11 +5,12 @@
     <Authors>Vytautas Klumbys</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/Vycka/Viki.Pipeline</PackageProjectUrl>
-    <Version>0.0.5-preview</Version>
+    <Version>0.0.6-preview</Version>
     <Company />
     <RepositoryUrl>https://github.com/Vycka/Viki.Pipeline</RepositoryUrl>
     <Product>Viki.Pipeline</Product>
-    <Description>Collection of tools for moving large amounts of data within the app between threads through streams/enumerables.
+    <Description>WiP
+Collection of tools for moving large amounts of data within the app between threads through streams/enumerables.
 IPipe&lt;T&gt; - in-memory transport layer.
  - Current implementation (BatchingPipe) always keeps something in the buffer unless its completed, thus if wanna keep pipe open for a while and flush things - no such feature yet.
 *Producer/Consumer*StreamAdapter's helps work with IPipe as if it was a MemoryStream but with ability to read and write at the same time (performance will be better once i will cut away CombinedAsyncStream from Read Adapter.)

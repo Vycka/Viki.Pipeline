@@ -4,7 +4,7 @@ using Viki.Pipeline.Core.Interfaces;
 namespace Viki.Pipeline.Core.Pipes
 {
     /// <summary>
-    /// High-throughput ordered in-memory implementation focused to minimal amount of overhead on producer-side.
+    /// High-throughput ordered in-memory implementation focused to keep minimal amount of overhead on producer-side.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class BatchingPipe<T> : IPipe<T>
