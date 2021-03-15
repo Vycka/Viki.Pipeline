@@ -7,12 +7,4 @@
     public interface IPipe<T> : IUnorderedPipe<T>
     {
     }
-
-    public interface IPipeMetrics
-    {
-        /// <summary>
-        /// Get approximate value of items in the buffer.
-        /// </summary>
-        long BufferedItems { get; }
-    }
 }

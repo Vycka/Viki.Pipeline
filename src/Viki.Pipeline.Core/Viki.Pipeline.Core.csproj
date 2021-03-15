@@ -12,7 +12,7 @@
     <Description>Collection of tools for moving large amounts of data within the app between threads through streams/enumerables.
 IPipe&lt;T&gt; - in-memory transport layer.
  - Current implementation (BatchingPipe) always keeps something in the buffer unless its completed, thus if wanna keep pipe open for a while and flush things - no such feature yet.
-*Read/Write*StreamAdapter's helps work with IPipe as if it was a MemoryStream but with ability to read and write at the same time (performance will be better after cutting away CombinedAsyncStream from Read Adapter.)
+*Producer/Consumer*StreamAdapter's helps work with IPipe as if it was a MemoryStream but with ability to read and write at the same time (performance will be better once i will cut away CombinedAsyncStream from Read Adapter.)
 * Additionally there are extensions which expose Read/Write of pipes through enumerables.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
