@@ -9,6 +9,10 @@ namespace Viki.Pipeline.Core.Pipes
 
         private List<T> _writeOnlyList, _readOnlyList;
 
+        /// <summary>
+        /// Ordered in-memory transport layer.
+        /// </summary>
+        /// <param name="initialCapacity">Initial WoS and RoS buffers capacity. Total allocated amount of buffer will be double as two lists are allocated.</param>
         public BatchingPipe(int? initialCapacity = null)
         {
             if (initialCapacity.HasValue)
