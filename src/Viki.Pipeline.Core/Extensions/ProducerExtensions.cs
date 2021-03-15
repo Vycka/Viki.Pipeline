@@ -3,8 +3,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Viki.Pipeline.Core.Interfaces;
+using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Streams;
-using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Extensions
 {
@@ -58,7 +58,7 @@ namespace Viki.Pipeline.Core.Extensions
             }
         }
 
-        public static Stream ToWriteOnlyStream(this IProducer<Packet> producer, bool closeProducer = true)
+        public static Stream ToWriteOnlyStream(this IProducer<Packet<byte>> producer, bool closeProducer = true)
         {
             return new ProducerStreamAdapter(producer, closeProducer);
         }

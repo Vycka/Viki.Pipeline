@@ -3,6 +3,10 @@ using Viki.Pipeline.Core.Interfaces;
 
 namespace Viki.Pipeline.Core.Pipes
 {
+    /// <summary>
+    /// High-throughput ordered in-memory implementation focused to minimal amount of overhead on producer-side.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class BatchingPipe<T> : IPipe<T>
     {
         private bool _completed;
@@ -10,9 +14,10 @@ namespace Viki.Pipeline.Core.Pipes
         private List<T> _writeOnlyList, _readOnlyList;
 
         /// <summary>
-        /// Ordered in-memory transport layer.
+        /// High-throughput ordered in-memory implementation with intention to have minimal(sort-of) amount of CPU overhead on producer-side.
         /// </summary>
-        /// <param name="initialCapacity">Initial WoS and RoS buffers capacity. Total allocated amount of buffer will be double as two lists are allocated.</param>
+        /// <param name="initialCapacity">Initial WoS and RoS buffers capacity. Total allocated amount of buffer will be double as two lists are allocated.
+        /// BEWARE: If initial capacity if not enough, Producing thread will do additional work to reallocate whole buffer.</param>
         public BatchingPipe(int? initialCapacity = null)
         {
             if (initialCapacity.HasValue)

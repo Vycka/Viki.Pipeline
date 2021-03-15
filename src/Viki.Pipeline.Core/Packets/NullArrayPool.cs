@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Buffers;
 
-namespace Viki.Pipeline.Core.Streams.Components
+namespace Viki.Pipeline.Core.Packets
 {
     public class NullArrayPool 
     {

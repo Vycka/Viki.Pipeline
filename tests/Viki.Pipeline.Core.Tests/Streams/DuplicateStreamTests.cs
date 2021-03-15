@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Viki.Pipeline.Core.Extensions;
 using Viki.Pipeline.Core.Interfaces;
+using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Pipes;
 using Viki.Pipeline.Core.Streams;
-using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Tests.Streams
 {
@@ -16,7 +16,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         public async Task HappyFlow()
         {
             Stream inputStream = FixedTestData.CreateStream();
-            IPipe<Packet> duplicateBuffer = new BatchingPipe<Packet>();
+            IPipe<Packet<byte>> duplicateBuffer = new BatchingPipe<Packet<byte>>();
 
             DuplicateStream sut = new DuplicateStream(inputStream, duplicateBuffer.ToWriteOnlyStream());
 

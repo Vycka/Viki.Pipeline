@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Viki.Pipeline.Core.Extensions;
+using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Streams;
-using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Tests
 {
@@ -35,7 +35,7 @@ namespace Viki.Pipeline.Core.Tests
             .Concat(additionalStrams)
             .ToArray();
         
-        public static async IAsyncEnumerable<Packet> CreatePackets()
+        public static async IAsyncEnumerable<Packet<byte>> CreatePackets()
         {
             byte[] trashArray = new byte[3];
 
@@ -48,7 +48,7 @@ namespace Viki.Pipeline.Core.Tests
                 yield return await Packet.ReadFrom(new StreamGenerator(splitBytes * 2, scenario.Item1));
                 yield return await Packet.ReadFrom(new StreamGenerator(splitBytes * 1, scenario.Item1));
                 yield return await Packet.ReadFrom(new StreamGenerator(modBytes, scenario.Item1));
-                yield return new Packet(trashArray, 0, NullArrayPool.Instance);
+                yield return new Packet<byte>(trashArray, 0, NullArrayPool.Instance);
             }
         }
         

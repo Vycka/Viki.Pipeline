@@ -4,8 +4,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Viki.Pipeline.Core.Interfaces;
+using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Streams;
-using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Extensions
 {
@@ -81,7 +81,7 @@ namespace Viki.Pipeline.Core.Extensions
             return task;
         }
 
-        public static Stream ToReadOnlyStream(this IConsumer<Packet> consumer, int pollingDelayMilliseconds = 100)
+        public static Stream ToReadOnlyStream(this IConsumer<Packet<byte>> consumer, int pollingDelayMilliseconds = 100)
         {
             return new ConsumerStreamAdapter(consumer, pollingDelayMilliseconds);
         }

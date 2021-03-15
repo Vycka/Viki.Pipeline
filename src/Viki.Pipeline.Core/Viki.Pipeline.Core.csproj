@@ -37,4 +37,8 @@ for now nothings stable, anything can be refactored.</PackageReleaseNotes>
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Streams\Components\" />
+  </ItemGroup>
+
 </Project>

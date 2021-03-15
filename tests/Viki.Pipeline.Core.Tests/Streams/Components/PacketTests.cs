@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
 using NUnit.Framework;
-using Viki.Pipeline.Core.Streams.Components;
+using Viki.Pipeline.Core.Packets;
 
 namespace Viki.Pipeline.Core.Tests.Streams.Components
 {
@@ -12,7 +12,7 @@ namespace Viki.Pipeline.Core.Tests.Streams.Components
         {
             MockArrayPool mock = new MockArrayPool();
 
-            Packet sut = new Packet(new byte[0], 0, mock);
+            Packet<byte> sut = new Packet<byte>(new byte[0], 0, mock);
 
             sut.Dispose();
             sut.Dispose();

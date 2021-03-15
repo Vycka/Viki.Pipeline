@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Viki.Pipeline.Core.Extensions;
+using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Pipes;
 using Viki.Pipeline.Core.Streams;
-using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Tests.Streams
 {
@@ -16,7 +16,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         {
             Stream testData = new CombinedStream(FixedTestData.CreateStreams());
 
-            BatchingPipe<Packet> packetsPipe = new BatchingPipe<Packet>();
+            BatchingPipe<Packet<byte>> packetsPipe = new BatchingPipe<Packet<byte>>();
             Stream sut = packetsPipe.ToWriteOnlyStream();
 
             Task.Run(async () =>

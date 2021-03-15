@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using NUnit.Framework;
 using Viki.Pipeline.Core.Extensions;
+using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Pipes;
-using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Tests.Streams
 {
@@ -12,7 +12,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         [Test]
         public void HappyFlow()
         {
-            BatchingPipe<Packet> packetsPipe = new BatchingPipe<Packet>();
+            BatchingPipe<Packet<byte>> packetsPipe = new BatchingPipe<Packet<byte>>();
 
             _ = packetsPipe.ProduceCompleteAsync(FixedTestData.CreatePackets());
 

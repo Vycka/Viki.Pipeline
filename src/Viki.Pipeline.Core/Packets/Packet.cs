@@ -3,16 +3,16 @@ using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Viki.Pipeline.Core.Streams.Components
+namespace Viki.Pipeline.Core.Packets
 {
-    public class Packet : IDisposable
+    public class Packet<T>: IDisposable
     {
         public readonly int DataLength;
-        public byte[] Data { get; private set; } 
+        public T[] Data { get; private set; } 
 
-        private readonly ArrayPool<byte> _arrayPool;
+        private readonly ArrayPool<T> _arrayPool;
 
-        public Packet(byte[] data, int dataLength, ArrayPool<byte> arrayPool)
+        public Packet(T[] data, int dataLength, ArrayPool<T> arrayPool)
         {
             DataLength = dataLength;
             Data = data ?? throw new ArgumentNullException(nameof(data));
@@ -27,15 +27,23 @@ namespace Viki.Pipeline.Core.Streams.Components
                 Data = null;
             }
         }
+    }
 
-        public static async Task<Packet> ReadFrom(Stream stream)
+    public static class Packet
+    {
+        public static Task<Packet<byte>> ReadFrom(Stream stream)
+        {
+            return ReadFrom(stream, NullArrayPool.Instance);
+        }
+
+        public static async Task<Packet<byte>> ReadFrom(Stream stream, ArrayPool<byte> arrayPool)
         {
             MemoryStream localCopy = new MemoryStream();
 
             await stream.CopyToAsync(localCopy);
 
             byte[] localCopyBytes = localCopy.ToArray();
-            return new Packet(localCopyBytes, localCopyBytes.Length, NullArrayPool.Instance);
+            return new Packet<byte>(localCopyBytes, localCopyBytes.Length, arrayPool);
         }
     }
 }

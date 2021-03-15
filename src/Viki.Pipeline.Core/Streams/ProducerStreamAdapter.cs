@@ -3,19 +3,19 @@ using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 using Viki.Pipeline.Core.Interfaces;
+using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Streams.Base;
-using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Streams
 {
     public class ProducerStreamAdapter : UnbufferedWriteOnlyStreamBase
     {
-        private readonly IProducer<Packet> _producer;
+        private readonly IProducer<Packet<byte>> _producer;
         private readonly bool _closeProducer;
 
         private static ArrayPool<byte> ArrayPool = ArrayPool<byte>.Shared;
 
-        public ProducerStreamAdapter(IProducer<Packet> producer, bool closeProducer = true)
+        public ProducerStreamAdapter(IProducer<Packet<byte>> producer, bool closeProducer = true)
         {
             _producer = producer ?? throw new ArgumentNullException(nameof(producer));
             _closeProducer = closeProducer;
@@ -27,7 +27,7 @@ namespace Viki.Pipeline.Core.Streams
 
             Array.Copy(buffer, offset, localBuffer, 0, count);
 
-            Packet packet = new Packet(localBuffer, count, ArrayPool);
+            Packet<byte> packet = new Packet<byte>(localBuffer, count, ArrayPool);
 
             _producer.Produce(packet);
         }
