@@ -5,7 +5,7 @@
     <Authors>Vytautas Klumbys</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/Vycka/Viki.Pipeline</PackageProjectUrl>
-    <Version>0.0.3-preview</Version>
+    <Version>0.0.4-preview</Version>
     <Company />
     <RepositoryUrl>https://github.com/Vycka/Viki.Pipeline</RepositoryUrl>
     <Product>Viki.Pipeline</Product>
@@ -26,10 +26,6 @@
     <PackageReleaseNotes>MvP library version for first battle-tests.
 for now nothings stable, anything can be refactored.</PackageReleaseNotes>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Streams\Interfaces\" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\LICENSE">

@@ -10,9 +10,9 @@ namespace Viki.Pipeline.Core.Streams
 {
     // Took idea from https://stackoverflow.com/questions/3879152/how-do-i-concatenate-two-system-io-stream-instances-into-one
     // Made my version of it.
-    public class CombinedAsyncStream : UnbufferedReadOnlyStreamBase, IDisposablesBag
+    public class CombinedAsyncStream : UnbufferedReadOnlyStreamBase, IAsyncDisposablesBag
     {
-        private readonly Stack<IDisposable> _disposables;
+        private readonly Stack<IAsyncDisposable> _disposables;
 
         private readonly bool _disposeStreams;
         private readonly IAsyncEnumerable<Stream> _streams;
@@ -30,10 +30,10 @@ namespace Viki.Pipeline.Core.Streams
             _disposeStreams = disposeStreams;
             _streams = streams ?? throw new ArgumentNullException(nameof(streams));
 
-            _disposables = new Stack<IDisposable>();
+            _disposables = new Stack<IAsyncDisposable>();
         }
 
-
+        /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
             Task<int> readTask = ReadAsync(buffer, offset, count, CancellationToken.None);
@@ -42,6 +42,7 @@ namespace Viki.Pipeline.Core.Streams
             return readTask.Result;
         }
 
+        /// <inheritdoc />
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             await EnsureEnumeratorInitialized(cancellationToken).ConfigureAwait(false);
@@ -63,6 +64,7 @@ namespace Viki.Pipeline.Core.Streams
             return bytesRead;
         }
 
+        /// <inheritdoc />
         public override async ValueTask DisposeAsync()
         {
             await EnsureEnumeratorInitialized(CancellationToken.None);
@@ -78,10 +80,15 @@ namespace Viki.Pipeline.Core.Streams
             // IDisposablesBag part
             while (_disposables.Count != 0)
             {
-                _disposables.Pop()?.Dispose();
+                IAsyncDisposable disposable = _disposables.Pop();
+                if (disposable != null)
+                {
+                    await disposable.DisposeAsync();
+                }
             }
-        }
 
+            await base.DisposeAsync();
+        }
 
         private void HandleStreamDisposing(Stream stream)
         {
@@ -117,7 +124,7 @@ namespace Viki.Pipeline.Core.Streams
         }
 
         /// <inheritdoc />
-        void IDisposablesBag.AddDisposable(IDisposable disposable)
+        void IAsyncDisposablesBag.AddDisposable(IAsyncDisposable disposable)
         {
             _disposables.Push(disposable);
         }

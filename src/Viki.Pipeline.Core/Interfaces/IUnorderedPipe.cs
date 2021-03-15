@@ -1,10 +1,10 @@
 ﻿namespace Viki.Pipeline.Core.Interfaces
 {
     /// <summary>
-    /// Same as IPipe, but results might be unordered (sort of like udp)
+    /// IUnorderedPipe is a transport layer interface which alone doesn't guarantee same order of passed objects. this can be used for messaging type of tasks where order is not relevant.
+    /// For ordered transfers, IPipe needs to be used.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface IUnorderedPipe<T> : IPipe<T>
+    public interface IUnorderedPipe<T> : IConsumer<T>, IProducer<T>, IPipeMetrics
     {
     }
 }
