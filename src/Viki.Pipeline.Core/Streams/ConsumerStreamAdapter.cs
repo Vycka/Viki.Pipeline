@@ -5,6 +5,8 @@ using Viki.Pipeline.Core.Streams.Components;
 
 namespace Viki.Pipeline.Core.Streams
 {
+    // TODO: CombinedAsyncStream is a temporary solution, as making stream out of IProducer directly would cut away to IEnumerables related layer
+    // Especially when CombinedAsyncStream introduces some questionable behaviour when dealing with Async enumerables.
     public class ConsumerStreamAdapter : CombinedAsyncStream
     {
         public ConsumerStreamAdapter(IConsumer<Packet> consumer, int pollingDelayMilliseconds = 100)

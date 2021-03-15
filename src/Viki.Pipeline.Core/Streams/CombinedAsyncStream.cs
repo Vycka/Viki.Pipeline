@@ -19,6 +19,7 @@ namespace Viki.Pipeline.Core.Streams
 
         private IAsyncEnumerator<Stream> _enumerator;
         private bool _streamAvailable;
+        private CancellationTokenSource _enumeratorCancellationTokenSource;
 
         /// <summary>
         /// Create new instance of CombinedStream
@@ -45,23 +46,32 @@ namespace Viki.Pipeline.Core.Streams
         /// <inheritdoc />
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            await EnsureEnumeratorInitialized(cancellationToken).ConfigureAwait(false);
-
-            int bytesRead = 0;
-
-            while (bytesRead == 0 && IsEnumeratorStreamAvailable())
+            try
             {
-                Stream currentStream = GetEnumeratorCurrent();
-                bytesRead = await currentStream.ReadAsync(buffer, offset, count, cancellationToken);
+                await EnsureEnumeratorInitialized(cancellationToken);
 
-                if (bytesRead == 0)
+                int bytesRead = 0;
+
+                while (bytesRead == 0 && IsEnumeratorStreamAvailable())
                 {
-                    HandleStreamDisposing(currentStream);
-                    await AdvanceEnumerator();
+                    Stream currentStream = GetEnumeratorCurrent();
+                    bytesRead = await currentStream.ReadAsync(buffer, offset, count, cancellationToken);
+
+                    if (bytesRead == 0)
+                    {
+                        HandleStreamDisposing(currentStream);
+                        await AdvanceEnumerator();
+                    }
                 }
+
+                return bytesRead;
+            }
+            catch (OperationCanceledException)
+            {
+                _enumeratorCancellationTokenSource.Cancel();
+                throw;
             }
 
-            return bytesRead;
         }
 
         /// <inheritdoc />
@@ -102,7 +112,11 @@ namespace Viki.Pipeline.Core.Streams
         {
             if (_enumerator == null)
             {
-                _enumerator = _streams.GetAsyncEnumerator(token);
+                _enumeratorCancellationTokenSource = new CancellationTokenSource();
+                token.Register(() => _enumeratorCancellationTokenSource.Cancel());
+
+                _enumerator = _streams.GetAsyncEnumerator(_enumeratorCancellationTokenSource.Token);
+
                 await AdvanceEnumerator();
             }
         }
