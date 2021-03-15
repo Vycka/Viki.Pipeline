@@ -24,6 +24,7 @@ namespace Viki.Pipeline.Core.Pipes
             }
         }
 
+        /// <inheritdoc />
         public void Produce(T item)
         {
             for (int i = 0; i < _pipes.Length; i++)
@@ -32,6 +33,7 @@ namespace Viki.Pipeline.Core.Pipes
             }
         }
 
+        /// <inheritdoc />
         public void Produce(IEnumerable<T> items)
         {
             T[] itemsArray = items.ToArray();
@@ -42,6 +44,7 @@ namespace Viki.Pipeline.Core.Pipes
             }
         }
 
+        /// <inheritdoc />
         public void ProducingCompleted()
         {
             for (int i = 0; i < _pipes.Length; i++)
@@ -52,6 +55,7 @@ namespace Viki.Pipeline.Core.Pipes
 
         public IConsumer<T> this[int index] => _pipes[index];
 
+        /// <inheritdoc />
         public IEnumerator<IConsumer<T>> GetEnumerator()
         {
             return _pipes.Cast<IConsumer<T>>().GetEnumerator();
@@ -61,5 +65,8 @@ namespace Viki.Pipeline.Core.Pipes
         {
             return _pipes.GetEnumerator();
         }
+
+        /// <inheritdoc />
+        public long BufferedItems => _pipes.Sum(p => p.BufferedItems);
     }
 }

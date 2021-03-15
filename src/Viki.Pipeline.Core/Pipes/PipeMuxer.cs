@@ -66,8 +66,10 @@ namespace Viki.Pipeline.Core.Pipes
 
         #region IConsumer
 
+        /// <inheritdoc />
         public bool Available => !_completed || _consumers.Count != 0 || _buffer.Count != 0 || _addQueue.IsEmpty == false;
 
+        /// <inheritdoc />
         public bool TryLockBatch(out ICollection<T> batch)
         {
             _buffer.AddRange(TryRead().SelectMany(r => r));
@@ -79,6 +81,7 @@ namespace Viki.Pipeline.Core.Pipes
             return result;
         }
 
+        /// <inheritdoc />
         public void ReleaseBatch()
         {
             _buffer.Clear();

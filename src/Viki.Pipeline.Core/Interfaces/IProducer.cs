@@ -5,7 +5,7 @@ namespace Viki.Pipeline.Core.Interfaces
     /// <summary>
     /// Producer side of transport layer. Only one thread at the time can use implementation methods on instance of this interface.
     /// </summary>
-    public interface IProducer<T>
+    public interface IProducer<T> : IPipeMetrics
     {
         /// <summary>
         /// Produce single item into collection

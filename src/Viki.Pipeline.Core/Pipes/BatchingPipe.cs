@@ -32,8 +32,10 @@ namespace Viki.Pipeline.Core.Pipes
             }
         }
 
+        /// <inheritdoc />
         public bool Available => !_completed || _readOnlyList.Count != 0 || _writeOnlyList.Count != 0;
 
+        /// <inheritdoc />
         public bool TryLockBatch(out ICollection<T> batch)
         {
             bool result = false;
@@ -71,6 +73,7 @@ namespace Viki.Pipeline.Core.Pipes
             return result;
         }
 
+        /// <inheritdoc />
         public void ReleaseBatch()
         {
             _readOnlyList.Clear();
@@ -78,6 +81,7 @@ namespace Viki.Pipeline.Core.Pipes
             Flip();
         }
 
+        /// <inheritdoc />
         private void Flip()
         {
             var tmp = _readOnlyList;
@@ -85,21 +89,25 @@ namespace Viki.Pipeline.Core.Pipes
             _writeOnlyList = tmp;
         }
 
+        /// <inheritdoc />
         public void Produce(T item)
         {
             _writeOnlyList.Add(item);
         }
 
+        /// <inheritdoc />
         public void Produce(IEnumerable<T> item)
         {
             _writeOnlyList.AddRange(item);
         }
 
+        /// <inheritdoc />
         public void ProducingCompleted()
         {
             _completed = true;
         }
 
+        /// <inheritdoc />
         public long BufferedItems => _writeOnlyList.Count + _readOnlyList.Count;
     }
 }

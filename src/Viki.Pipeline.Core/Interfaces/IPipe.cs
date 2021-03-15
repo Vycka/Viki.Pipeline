@@ -4,7 +4,7 @@
     /// <summary>
     /// IPipe is a transport layer interface which also keeps order of passed objects. 
     /// </summary>
-    public interface IPipe<T> : IUnorderedPipe<T>
+    public interface IPipe<T> : IUnorderedPipe<T>, IConsumer<T>
     {
     }
 }

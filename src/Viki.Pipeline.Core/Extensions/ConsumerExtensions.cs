@@ -11,25 +11,39 @@ namespace Viki.Pipeline.Core.Extensions
 {
     public static class ConsumerExtensions
     {
-        public static IEnumerable<T[]> ToBatchedEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100)
+        public static IEnumerable<Packet<T>> ToPacketsEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100)
         {
             while (consumer.Available)
             {
                 ICollection<T> batch;
                 while (consumer.TryLockBatch(out batch))
                 {
-                    for (int i = 0; i < batch.Count; i++)
-                    {
-                        T[] resultCopy = new T[batch.Count];
-                        batch.CopyTo(resultCopy, 0);
+                    Packet<T> packet = Packet.CopyFrom(batch);
 
-                        yield return resultCopy;
-                    }
+                    yield return packet;
 
                     consumer.ReleaseBatch();
                 }
 
                 Thread.Sleep(pollingDelayMilliseconds);
+            }
+        }
+
+        public static async IAsyncEnumerable<Packet<T>> ToPacketsAsyncEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100)
+        {
+            while (consumer.Available)
+            {
+                ICollection<T> batch;
+                while (consumer.TryLockBatch(out batch))
+                {
+                    Packet<T> packet = Packet.CopyFrom(batch);
+
+                    yield return packet;
+
+                    consumer.ReleaseBatch();
+                }
+
+                await Task.Delay(pollingDelayMilliseconds);
             }
         }
 
