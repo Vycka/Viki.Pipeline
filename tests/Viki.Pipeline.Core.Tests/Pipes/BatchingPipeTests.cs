@@ -1,8 +1,13 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using Dasync.Collections;
 using NUnit.Framework;
 using Viki.Pipeline.Core.Extensions;
 using Viki.Pipeline.Core.Interfaces;
+using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Pipes;
 
 namespace Viki.Pipeline.Core.Tests.Pipes
@@ -23,39 +28,19 @@ namespace Viki.Pipeline.Core.Tests.Pipes
         [Test(Description = "Move 500m of values and check if order is preserved, (child thread produces, test thread consumes)")]
         public void HappyFlow()
         {
-            // Could do more but since reader thread is slower. this test alone can eat up to ~4GB+ of RAM.
-            
-            long expectPayloadCount = 500000000; // 5B
+
+            // 500m on i9-9900 takes about 5-8secs.. bottle-necked by consumer thread. (Release build)
+            long expectPayloadCount = 500000000;
 
             TestContext.WriteLine($"Pipe allocation {_stopwatch.Elapsed}");
             IPipe<long> sut = new BatchingPipe<long>(100000000);
             TestContext.WriteLine($"Pipe allocation end {_stopwatch.Elapsed}");
             
-            Task producingTask = Task.Run(async () =>
-            {
-                TestContext.WriteLine($"Producer started {_stopwatch.Elapsed}");
+            // Limited buffer prevents this test eating more than ~1GB
+            Task producingTask = RunProducingTask(sut, expectPayloadCount, 100000000);
+            
 
-                for (long i = 0; i < expectPayloadCount; i++)
-                {
-                    // Since producing thread in sterile environment will be faster, we need to throttle it a bit.
-                    // Without it and with scenarios like 5 billion of items, this test can hit 40GB+ of used RAM quite fast.
-                    // TODO: Create test which batch reads so consumer will be faster than producer.
-
-                    // with 100m limit this should keep memory usage below 1GB.
-                    if (sut.BufferedItems >= 100000000) 
-                        await Task.Delay(1);
-
-                    sut.Produce(i);
-                }
-
-                sut.ProducingCompleted();
-
-                TestContext.WriteLine($"Producer completed {_stopwatch.Elapsed}");
-            });
-
-
-            TestContext.WriteLine($"Consumer started {_stopwatch.Elapsed}");
-
+            TestContext.WriteLine($"Consumer stating {_stopwatch.Elapsed}");
             long expectedNextValue = 0;
             foreach (long actualValue in sut.ToEnumerable())
             {
@@ -68,18 +53,65 @@ namespace Viki.Pipeline.Core.Tests.Pipes
             }
 
             Assert.IsTrue(producingTask.IsCompletedSuccessfully);
-
-            Assert.IsTrue(producingTask.IsCompletedSuccessfully);
             Assert.AreEqual(expectPayloadCount, expectedNextValue);
 
-            TestContext.WriteLine($"Consumer ended {_stopwatch.Elapsed}");
+            TestContext.WriteLine($"Consumer completed {_stopwatch.Elapsed}");
         }
 
-        private Task RunProducingTask(IProducer<long> producer, long payloadCount)
+
+        [Test(Description = "Same situation as default HappyFlow, with exception that many threads get to consume response to keep up with producer")]
+        public async Task HappyFlowHeavyPooledBatches()
+        {
+            // 5B on i9-9900 takes about 25secs.. bottle-necked by producer thread. (Release build)
+            long expectPayloadCount = 5000000000;
+
+            TestContext.WriteLine($"Pipe allocation {_stopwatch.Elapsed}");
+            IPipe<long> sut = new BatchingPipe<long>(100000000);
+            TestContext.WriteLine($"Pipe allocation complete {_stopwatch.Elapsed}");
+
+            // with unlimited buffer, test run was sitting between 3-16GB of ram usage.
+            Task producingTask = RunProducingTask(sut, expectPayloadCount, Int32.MaxValue);
+            
+            
+
+            TestContext.WriteLine($"Consumer stating {_stopwatch.Elapsed}");
+            ConcurrentBag<BatchSummary> results = new ConcurrentBag<BatchSummary>();
+            await sut
+                .ToPacketsAsyncEnumerable()
+                .ParallelForEachAsync((packet, index) =>
+                {
+                    results.Add(BatchSummary.Validate(packet, index));
+                    return Task.CompletedTask;
+                }
+            );
+            TestContext.WriteLine($"Consumer completed {_stopwatch.Elapsed}");
+
+            Assert.IsTrue(producingTask.IsCompletedSuccessfully);
+
+            BatchSummary[] resultsArray = results
+                .Where(p => !p.Empty)
+                .OrderBy(r => r.Index)
+                .ToArray();
+
+            Assert.Positive(resultsArray.Length);
+            Assert.IsTrue(resultsArray.All(r => r.Valid));
+
+            for (int i = 1; i < resultsArray.Length; i++)
+            {
+                if (resultsArray[i].First - 1 != resultsArray[i - 1].Last)
+                {
+                    Assert.Fail("Bad ordering detected");
+                }
+            }
+
+            Assert.AreEqual(expectPayloadCount-1, resultsArray[^1].Last);
+        }
+
+        private Task RunProducingTask(IProducer<long> producer, long payloadCount, int bufferLimit)
         {
             return Task.Run(async () =>
             {
-                TestContext.WriteLine($"Producer started {_stopwatch.Elapsed}");
+                TestContext.WriteLine($"Producer starting {_stopwatch.Elapsed}");
 
                 for (long i = 0; i < payloadCount; i++)
                 {
@@ -88,7 +120,7 @@ namespace Viki.Pipeline.Core.Tests.Pipes
                     // TODO: Create test which batch reads so consumer will be faster than producer.
 
                     // with 100m limit this should keep memory usage below 1GB.
-                    if (producer.BufferedItems >= 100000000)
+                    if (producer.BufferedItems >= bufferLimit)
                         await Task.Delay(1);
 
                     producer.Produce(i);
@@ -98,6 +130,45 @@ namespace Viki.Pipeline.Core.Tests.Pipes
 
                 TestContext.WriteLine($"Producer completed {_stopwatch.Elapsed}");
             });
+        }
+
+        private class BatchSummary
+        {
+            public long Index, First, Last;
+            public bool Valid;
+            public bool Empty;
+
+            public static BatchSummary Validate(Packet<long> packet, long index)
+            {
+                BatchSummary result = new BatchSummary();
+
+                result.Index = index;
+
+                if (packet.DataLength != 0)
+                {
+                    result.First = packet.Data[0];
+                    result.Last = packet.Data[packet.DataLength-1];
+                    result.Valid = true;
+                    
+
+                    long current = result.First;
+                    for (int i = 1; i < packet.DataLength; i++)
+                    {
+                        if (++current != packet.Data[i])
+                        {
+                            result.Valid = false;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    result.Empty = true;
+                    result.Valid = true;
+                }
+
+                return result;
+            }
         }
     }
 }
