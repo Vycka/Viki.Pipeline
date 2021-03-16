@@ -22,17 +22,6 @@ namespace Viki.Pipeline.Core.Packets
         private readonly ArrayPool<T> _arrayPool;
 
         /// <summary>
-        /// Creates array packet assuming that data should be returned to Shared ArrayPool
-        /// </summary>
-        /// <param name="data">data array</param>
-        /// <param name="dataLength">usable data length in data array</param>\
-
-        public Packet(T[] data, int dataLength)
-            : this(data, dataLength, ArrayPool<T>.Shared)
-        {
-        }
-
-        /// <summary>
         /// Creates array packet which will be returned to provided ArrayPool on dispose
         /// </summary>
         /// <param name="data">data array</param>

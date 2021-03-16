@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <Authors>Vytautas Klumbys</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/Vycka/Viki.Pipeline</PackageProjectUrl>
-    <Version>0.0.6-preview</Version>
+    <Version>0.0.7-preview</Version>
     <Company />
     <RepositoryUrl>https://github.com/Vycka/Viki.Pipeline</RepositoryUrl>
     <Product>Viki.Pipeline</Product>

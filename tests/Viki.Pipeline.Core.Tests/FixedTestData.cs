@@ -49,7 +49,7 @@ namespace Viki.Pipeline.Core.Tests
                 yield return await ReadFrom(new StreamGenerator(splitBytes * 2, scenario.Item1));
                 yield return await ReadFrom(new StreamGenerator(splitBytes * 1, scenario.Item1));
                 yield return await ReadFrom(new StreamGenerator(modBytes, scenario.Item1));
-                yield return new Packet<byte>(trashArray, 0);
+                yield return new Packet<byte>(trashArray, 0, NullArrayPool.Instance);
             }
         }
         
