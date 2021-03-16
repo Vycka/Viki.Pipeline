@@ -6,7 +6,7 @@ namespace Viki.Pipeline.Core.Pipes
     /// <summary>
     /// High-throughput ordered in-memory implementation focused to keep minimal amount of overhead on producer-side.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">type of data transfer object</typeparam>
     public class BatchingPipe<T> : IPipe<T>
     {
         private bool _completed;
@@ -82,14 +82,6 @@ namespace Viki.Pipeline.Core.Pipes
         }
 
         /// <inheritdoc />
-        private void Flip()
-        {
-            var tmp = _readOnlyList;
-            _readOnlyList = _writeOnlyList;
-            _writeOnlyList = tmp;
-        }
-
-        /// <inheritdoc />
         public void Produce(T item)
         {
             _writeOnlyList.Add(item);
@@ -109,5 +101,12 @@ namespace Viki.Pipeline.Core.Pipes
 
         /// <inheritdoc />
         public long BufferedItems => _writeOnlyList.Count + _readOnlyList.Count;
+
+        private void Flip()
+        {
+            var tmp = _readOnlyList;
+            _readOnlyList = _writeOnlyList;
+            _writeOnlyList = tmp;
+        }
     }
 }

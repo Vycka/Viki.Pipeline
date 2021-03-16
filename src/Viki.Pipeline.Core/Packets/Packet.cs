@@ -8,21 +8,36 @@ namespace Viki.Pipeline.Core.Packets
 {
     public class Packet<T>: IDisposable
     {
+        /// <summary>
+        /// Carried data array. Keep in mind that length of array might be bigger than the usable data contained
+        /// - use DataLength property to get size of usable data.
+        /// </summary>
+        public T[] Data { get; private set; }
+
+        /// <summary>
+        /// Usable data length in array.
+        /// </summary>
         public readonly int DataLength;
-        public T[] Data { get; private set; } 
 
         private readonly ArrayPool<T> _arrayPool;
 
         /// <summary>
-        /// Creates array packet with Shared ArrayPool
+        /// Creates array packet assuming that data should be returned to Shared ArrayPool
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="dataLength"></param>
+        /// <param name="data">data array</param>
+        /// <param name="dataLength">usable data length in data array</param>\
+
         public Packet(T[] data, int dataLength)
             : this(data, dataLength, ArrayPool<T>.Shared)
         {
         }
 
+        /// <summary>
+        /// Creates array packet which will be returned to provided ArrayPool on dispose
+        /// </summary>
+        /// <param name="data">data array</param>
+        /// <param name="dataLength">usable data length in data array</param>
+        /// <param name="arrayPool">ArrayPool to return disposed array</param>
         public Packet(T[] data, int dataLength, ArrayPool<T> arrayPool)
         {
             DataLength = dataLength;
@@ -30,6 +45,7 @@ namespace Viki.Pipeline.Core.Packets
             _arrayPool = arrayPool ?? throw new ArgumentNullException(nameof(arrayPool));
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (Data != null)
@@ -40,6 +56,9 @@ namespace Viki.Pipeline.Core.Packets
         }
     }
 
+    /// <summary>
+    /// Packet initializers for common cases?
+    /// </summary>
     public static class Packet
     {
         /// <summary>
@@ -49,7 +68,7 @@ namespace Viki.Pipeline.Core.Packets
         /// <typeparam name="T"></typeparam>
         /// <param name="source">data source</param>
         /// <param name="count">items count to copy from data source</param>
-        /// <param name="offset">offset data source reading position</param>
+        /// <param name="offset">data source reading position offset</param>
         /// <returns></returns>
         public static Packet<T> CopyFrom<T>(T[] source, int count, int offset = 0)
         {

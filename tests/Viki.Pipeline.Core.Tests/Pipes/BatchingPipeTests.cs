@@ -80,8 +80,15 @@ namespace Viki.Pipeline.Core.Tests.Pipes
                 .ToPacketsAsyncEnumerable()
                 .ParallelForEachAsync((packet, index) =>
                 {
-                    results.Add(BatchSummary.Validate(packet, index));
-                    return Task.CompletedTask;
+                    try
+                    {
+                        results.Add(BatchSummary.Validate(packet, index));
+                        return Task.CompletedTask;
+                    }
+                    finally
+                    {
+                        packet.Dispose();
+                    }
                 }
             );
             TestContext.WriteLine($"Consumer completed {_stopwatch.Elapsed}");
@@ -115,10 +122,8 @@ namespace Viki.Pipeline.Core.Tests.Pipes
 
                 for (long i = 0; i < payloadCount; i++)
                 {
-                    // Since producing thread in sterile environment will be faster, we need to throttle it a bit.
-                    // Without it and with scenarios like 5 billion of items, this test can hit 40GB+ of used RAM quite fast.
-                    // TODO: Create test which batch reads so consumer will be faster than producer.
-
+                    // By default producing thread in sterile environment will be faster, we need to throttle it a bit.
+                    // Without the throttle in scenarios consisting of 5+ billion of items - this test can hit 40GB+ of used RAM quite fast.
                     // with 100m limit this should keep memory usage below 1GB.
                     if (producer.BufferedItems >= bufferLimit)
                         await Task.Delay(1);
