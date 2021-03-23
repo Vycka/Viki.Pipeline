@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using Viki.Pipeline.Core.Streams;
 using Viki.Pipeline.Core.Streams.Base;
+using Viki.Pipeline.Core.Streams.Interfaces;
 
 namespace Viki.Pipeline.Core.Tests.Streams
 {
@@ -17,6 +18,28 @@ namespace Viki.Pipeline.Core.Tests.Streams
             FixedTestData.AssertStream(sut, FixedTestData.Structure);
 
             Assert.IsTrue(checkDisposeStream.DisposeCalled);
+        }
+
+        [Test]
+        public void DisposableBagWorks()
+        {
+            CheckDisposeStream checkDispose = new CheckDisposeStream();
+
+            CombinedStream sut = new CombinedStream();
+            ((IDisposablesBag)sut).AddDisposable(checkDispose);
+
+            sut.Dispose();
+
+            Assert.IsTrue(checkDispose.DisposeCalled);
+        }
+
+        [Test]
+        public void EmptyStream()
+        {
+            byte[] buffer = new byte[16];
+
+            CombinedStream sut = new CombinedStream();
+            Assert.AreEqual(0, sut.Read(buffer, 0, buffer.Length));
         }
 
         private class CheckDisposeStream : UnbufferedReadOnlyStreamBase

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Viki.Pipeline.Core.Interfaces
 {
@@ -11,7 +12,12 @@ namespace Viki.Pipeline.Core.Interfaces
         /// Produce single item into collection
         /// </summary>
         /// <param name="item">item to produce</param>
-        void Produce(T item);
+        void Produce(T item)
+        {
+            // This default implementation depending from implementation, might impose overhead operations,
+            // its recommended to implement it anyway if implementation has more performing way in producing batches containing only one element 
+            Produce(Enumerable.Repeat(item, 1));
+        }
 
         /// <summary>
         /// Produce enumerable list of items.

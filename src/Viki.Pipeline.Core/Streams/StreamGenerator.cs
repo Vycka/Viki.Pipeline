@@ -31,6 +31,7 @@ namespace Viki.Pipeline.Core.Streams
         /// <param name="fillValue">value to fill</param>
         public StreamGenerator(long size, char fillValue) : this(size, Convert.ToByte(fillValue)) { }
 
+        /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (_position >= _size)
