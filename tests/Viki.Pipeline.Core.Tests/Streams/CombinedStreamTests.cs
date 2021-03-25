@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
 using Viki.Pipeline.Core.Streams;
 using Viki.Pipeline.Core.Streams.Base;
 using Viki.Pipeline.Core.Streams.Interfaces;
@@ -31,6 +32,21 @@ namespace Viki.Pipeline.Core.Tests.Streams
             sut.Dispose();
 
             Assert.IsTrue(checkDispose.DisposeCalled);
+        }
+
+        [Test]
+        public async Task DisposeAsyncWorks()
+        {
+            CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
+            CheckDisposeStream checkDisposeBag = new CheckDisposeStream();
+
+            CombinedStream sut = new CombinedStream(checkDisposeStream);
+            ((IDisposablesBag)sut).AddDisposable(checkDisposeBag);
+
+            await sut.DisposeAsync();
+
+            Assert.IsTrue(checkDisposeStream.DisposeCalled);
+            Assert.IsTrue(checkDisposeBag.DisposeCalled);
         }
 
         [Test]

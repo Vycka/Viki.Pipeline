@@ -12,6 +12,8 @@ namespace Viki.Pipeline.Core.Streams
     // Made my version of it.
     public class CombinedAsyncStream : UnbufferedReadOnlyStreamBase, IAsyncDisposablesBag
     {
+        private bool _disposed = false;
+
         private readonly Stack<IAsyncDisposable> _disposables;
 
         private readonly bool _disposeStreams;
@@ -74,9 +76,29 @@ namespace Viki.Pipeline.Core.Streams
 
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                DisposeAsyncInner().GetAwaiter().GetResult();
+                base.Dispose(disposing);
+            }
+        }
+
         /// <inheritdoc />
         public override async ValueTask DisposeAsync()
         {
+            if (!_disposed)
+            {
+                await DisposeAsyncInner();
+                await base.DisposeAsync();
+            }
+        }
+
+        private async ValueTask DisposeAsyncInner()
+        {
+            _disposed = true;
+
             await EnsureEnumeratorInitialized(CancellationToken.None);
 
             while (IsEnumeratorStreamAvailable())
@@ -96,8 +118,6 @@ namespace Viki.Pipeline.Core.Streams
                     await disposable.DisposeAsync();
                 }
             }
-
-            await base.DisposeAsync();
         }
 
         private void HandleStreamDisposing(Stream stream)

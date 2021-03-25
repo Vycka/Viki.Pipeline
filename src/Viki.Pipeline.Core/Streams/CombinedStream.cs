@@ -10,6 +10,8 @@ namespace Viki.Pipeline.Core.Streams
     // Made my version of it.
     public class CombinedStream : UnbufferedReadOnlyStreamBase, IDisposablesBag
     {
+        private bool _disposed = false;
+
         private readonly Stack<IDisposable> _disposables;
 
         private readonly bool _disposeStreams;
@@ -64,23 +66,29 @@ namespace Viki.Pipeline.Core.Streams
         // Called from Stream's base Dispose
         protected override void Dispose(bool disposing)
         {
-            EnsureEnumeratorInitialized();
-
-            while (IsEnumeratorStreamAvailable())
+            if (!_disposed)
             {
-                HandleStreamDisposing(GetEnumeratorCurrent());
-                AdvanceEnumerator();
+                _disposed = true;
+
+                EnsureEnumeratorInitialized();
+
+                while (IsEnumeratorStreamAvailable())
+                {
+                    HandleStreamDisposing(GetEnumeratorCurrent());
+                    AdvanceEnumerator();
+                }
+
+                _enumerator.Dispose();
+
+                // IDisposablesBag part
+                while (_disposables.Count != 0)
+                {
+                    _disposables.Pop()?.Dispose();
+                }
+
+                base.Dispose(disposing);
             }
 
-            _enumerator.Dispose();
-
-            // IDisposablesBag part
-            while (_disposables.Count != 0)
-            {
-                _disposables.Pop()?.Dispose();
-            }
-
-            base.Dispose(disposing);
         }
 
         private void HandleStreamDisposing(Stream stream)

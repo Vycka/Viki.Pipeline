@@ -16,14 +16,14 @@ namespace Viki.Pipeline.Core.Tests
         // Reading byte by byte was slow.
         // thus extra complexity below to use byte arrays.
 
-        public static List<Tuple<byte, int>> Structure = new List<Tuple<byte, int>>()
+        public static List<Tuple<byte, int>> Structure = new()
         {
-            new Tuple<byte, int>((byte)'E', 100645000),
-            new Tuple<byte, int>((byte)'A', 200004560),
-            new Tuple<byte, int>((byte)'D', 100000045),
-            new Tuple<byte, int>((byte)'G', 200500000),
-            new Tuple<byte, int>((byte)'B', 100060000),
-            new Tuple<byte, int>((byte)'e', 300007000),
+            new((byte)'E', 100645000),
+            new((byte)'A', 200004560),
+            new((byte)'D', 100000045),
+            new((byte)'G', 200500000),
+            new((byte)'B', 100060000),
+            new((byte)'e', 300007000),
         };
 
         public static Stream CreateStream() => new CombinedStream(CreateStreams());
