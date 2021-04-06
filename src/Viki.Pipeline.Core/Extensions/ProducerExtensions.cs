@@ -46,8 +46,7 @@ namespace Viki.Pipeline.Core.Extensions
             {
                 foreach (T item in items)
                 {
-                    if (token.IsCancellationRequested)
-                        break;
+                    token.ThrowIfCancellationRequested();
 
                     producer.Produce(item);
                 }

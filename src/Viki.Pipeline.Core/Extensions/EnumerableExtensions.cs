@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Viki.Pipeline.Core.Interfaces;
 using Viki.Pipeline.Core.Pipes;
@@ -8,11 +10,13 @@ namespace Viki.Pipeline.Core.Extensions
 {
     public static class EnumerableExtensions
     {
-        public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source)
+        public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             foreach (T item in source)
             {
                 yield return await Task.FromResult(item);
+
+                cancellationToken.ThrowIfCancellationRequested();
             }
         }
 

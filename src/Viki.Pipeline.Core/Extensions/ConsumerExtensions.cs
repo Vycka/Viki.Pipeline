@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Viki.Pipeline.Core.Interfaces;
@@ -29,18 +30,25 @@ namespace Viki.Pipeline.Core.Extensions
             }
         }
 
-        public static async IAsyncEnumerable<Packet<T>> ToPacketsAsyncEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100)
+        public static async IAsyncEnumerable<Packet<T>> ToPacketsAsyncEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             while (consumer.Available)
             {
                 ICollection<T> batch;
                 while (consumer.TryLockBatch(out batch))
                 {
-                    Packet<T> packet = Packet.CopyFrom(batch);
+                    try
+                    {
+                        Packet<T> packet = Packet.CopyFrom(batch);
 
-                    yield return packet;
+                        yield return packet;
 
-                    consumer.ReleaseBatch();
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                    finally
+                    {
+                        consumer.ReleaseBatch();
+                    }
                 }
 
                 await Task.Delay(pollingDelayMilliseconds);
@@ -66,22 +74,30 @@ namespace Viki.Pipeline.Core.Extensions
             }
         }
 
-        public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100)
+        public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IConsumer<T> consumer, int pollingDelayMilliseconds = 100, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             while (consumer.Available)
             {
                 ICollection<T> batch;
                 while (consumer.TryLockBatch(out batch))
                 {
-                    foreach (T item in batch)
+                    try
                     {
-                        yield return item;
+                        foreach (T item in batch)
+                        {
+                            yield return item;
+                        }
+                        
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                    finally
+                    {
+                        consumer.ReleaseBatch();
                     }
 
-                    consumer.ReleaseBatch();
                 }
 
-                await Task.Delay(pollingDelayMilliseconds);
+                await Task.Delay(pollingDelayMilliseconds, cancellationToken);
             }
         }
 
