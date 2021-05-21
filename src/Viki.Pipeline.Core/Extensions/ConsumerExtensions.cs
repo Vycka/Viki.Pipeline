@@ -51,6 +51,8 @@ namespace Viki.Pipeline.Core.Extensions
                     }
                 }
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await Task.Delay(pollingDelayMilliseconds);
             }
         }

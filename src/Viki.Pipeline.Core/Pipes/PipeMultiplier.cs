@@ -8,7 +8,7 @@ namespace Viki.Pipeline.Core.Pipes
 {
     public class PipeMultiplier<T> : IProducer<T>, IEnumerable<IConsumer<T>>
     {
-        private readonly BatchingPipe<T>[] _pipes;
+        private readonly IPipe<T>[] _pipes;
 
         public int Count => _pipes.Length;
 
@@ -22,6 +22,14 @@ namespace Viki.Pipeline.Core.Pipes
             {
                 _pipes[i] = new BatchingPipe<T>();
             }
+        }
+
+        public PipeMultiplier(params IPipe<T>[] producers)
+        {
+            if (producers?.Length <= 0)
+                throw new ArgumentOutOfRangeException(nameof(producers));
+
+            _pipes = producers.ToArray();
         }
 
         /// <inheritdoc />

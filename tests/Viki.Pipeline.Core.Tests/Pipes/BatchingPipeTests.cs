@@ -62,7 +62,7 @@ namespace Viki.Pipeline.Core.Tests.Pipes
         [Test(Description = "Same situation as default HappyFlow, with exception that many threads get to consume response to keep up with producer")]
         public async Task HappyFlowHeavyPooledBatches()
         {
-            // 5B on i9-9900 takes about 25secs.. bottle-necked by producer thread. (Release build)
+            // 5B (5000m) on i9-9900 takes about 25secs.. bottle-necked by producer thread. (Release build)
             long expectPayloadCount = 5000000000;
 
             TestContext.WriteLine($"Pipe allocation {_stopwatch.Elapsed}");
