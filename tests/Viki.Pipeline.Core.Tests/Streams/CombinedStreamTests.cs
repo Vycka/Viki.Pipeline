@@ -228,5 +228,11 @@ namespace Viki.Pipeline.Core.Tests.Streams
             Assert.ThrowsAsync<ObjectDisposedException>(async () => _ = await sutA.ReadAsync(buffer, 0, 1));
             Assert.ThrowsAsync<ObjectDisposedException>(async () => _ = await sutB.ReadAsync(buffer, 0, 1));
         }
+
+        [Test]
+        public void DisposeStreamsPropertyWorks()
+        {
+            throw new Exception("should cover this");
+        }
     }
 }

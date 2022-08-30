@@ -46,6 +46,9 @@ namespace Viki.Pipeline.Core.Streams
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(CombinedAsyncOnlyStream));
+
             Task<int> readTask = ReadAsync(buffer, offset, count, CancellationToken.None);
             Task.WaitAll(readTask);
 
@@ -56,7 +59,7 @@ namespace Viki.Pipeline.Core.Streams
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (IsDisposed)
-                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
+                throw new ObjectDisposedException(nameof(CombinedAsyncOnlyStream));
 
             try
             {
@@ -101,6 +104,10 @@ namespace Viki.Pipeline.Core.Streams
                 DisposeAsyncInner().GetAwaiter().GetResult();
                 base.Dispose(disposing);
             }
+            else
+            {
+                throw new ObjectDisposedException(nameof(CombinedAsyncOnlyStream));
+            }
         }
 
         /// <inheritdoc />
@@ -110,6 +117,10 @@ namespace Viki.Pipeline.Core.Streams
             {
                 await DisposeAsyncInner();
                 await base.DisposeAsync();
+            }
+            else
+            {
+                throw new ObjectDisposedException(nameof(CombinedAsyncOnlyStream));
             }
         }
 

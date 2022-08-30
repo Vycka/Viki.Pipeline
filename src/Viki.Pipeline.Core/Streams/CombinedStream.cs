@@ -52,7 +52,7 @@ namespace Viki.Pipeline.Core.Streams
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (IsDisposed)
-                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
+                throw new ObjectDisposedException(nameof(CombinedStream));
 
             EnsureEnumeratorInitialized();
 
@@ -82,7 +82,7 @@ namespace Viki.Pipeline.Core.Streams
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (IsDisposed)
-                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
+                throw new ObjectDisposedException(nameof(CombinedStream));
 
             EnsureEnumeratorInitialized();
 

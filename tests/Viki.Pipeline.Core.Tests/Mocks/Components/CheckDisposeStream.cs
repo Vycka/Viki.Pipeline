@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Viki.Pipeline.Core.Streams;
-using Viki.Pipeline.Core.Streams.Base;
 
 namespace Viki.Pipeline.Core.Tests.Mocks.Components
 {
