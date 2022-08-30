@@ -16,7 +16,10 @@ namespace Viki.Pipeline.Core.Streams
     /// </summary>
     public class CombinedAsyncOnlyStream : UnbufferedReadOnlyStreamBase, IAsyncDisposablesBag
     {
-        private bool _disposed = false;
+        /// <summary>
+        /// Indicates if stream is disposed
+        /// </summary>
+        public bool IsDisposed { get; private set; }
 
         private readonly Stack<IAsyncDisposable> _disposables;
 
@@ -52,6 +55,9 @@ namespace Viki.Pipeline.Core.Streams
         /// <inheritdoc />
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
+
             try
             {
                 await EnsureEnumeratorInitialized(cancellationToken);
@@ -61,11 +67,18 @@ namespace Viki.Pipeline.Core.Streams
                 while (bytesRead == 0 && IsEnumeratorStreamAvailable())
                 {
                     Stream currentStream = GetEnumeratorCurrent();
-                    bytesRead = await currentStream.ReadAsync(buffer, offset, count, cancellationToken);
+
+                    try
+                    {
+                        bytesRead = await currentStream.ReadAsync(buffer, offset, count, cancellationToken);
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
 
                     if (bytesRead == 0)
                     {
-                        HandleStreamDisposing(currentStream);
+                        await HandleStreamDisposingAsync(currentStream);
                         await AdvanceEnumerator();
                     }
                 }
@@ -80,9 +93,10 @@ namespace Viki.Pipeline.Core.Streams
 
         }
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!IsDisposed)
             {
                 DisposeAsyncInner().GetAwaiter().GetResult();
                 base.Dispose(disposing);
@@ -92,7 +106,7 @@ namespace Viki.Pipeline.Core.Streams
         /// <inheritdoc />
         public override async ValueTask DisposeAsync()
         {
-            if (!_disposed)
+            if (!IsDisposed)
             {
                 await DisposeAsyncInner();
                 await base.DisposeAsync();
@@ -101,13 +115,13 @@ namespace Viki.Pipeline.Core.Streams
 
         private async ValueTask DisposeAsyncInner()
         {
-            _disposed = true;
+            IsDisposed = true;
 
             await EnsureEnumeratorInitialized(CancellationToken.None);
 
             while (IsEnumeratorStreamAvailable())
             {
-                HandleStreamDisposing(GetEnumeratorCurrent());
+                await HandleStreamDisposingAsync(GetEnumeratorCurrent());
                 await AdvanceEnumerator();
             }
 
@@ -124,12 +138,21 @@ namespace Viki.Pipeline.Core.Streams
             }
         }
 
-        private void HandleStreamDisposing(Stream stream)
+        private ValueTask HandleStreamDisposingAsync(Stream stream)
         {
-            if (_disposeStreams)
+            ValueTask result = default;
+            if (_disposeStreams && stream != null)
             {
-                stream?.Dispose();
+                try
+                {
+                    result = stream.DisposeAsync();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
             }
+
+            return result;
         }
 
         private async Task EnsureEnumeratorInitialized(CancellationToken token)

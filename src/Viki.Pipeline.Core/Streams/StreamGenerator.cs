@@ -52,5 +52,15 @@ namespace Viki.Pipeline.Core.Streams
 
             return count;
         }
+
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                IsDisposed = true;
+                base.Dispose(disposing);
+            }
+        }
     }
 }

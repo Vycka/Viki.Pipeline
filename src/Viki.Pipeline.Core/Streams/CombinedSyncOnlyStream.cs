@@ -14,7 +14,11 @@ namespace Viki.Pipeline.Core.Streams
     /// </summary>
     public class CombinedSyncOnlyStream : UnbufferedReadOnlyStreamBase, IDisposablesBag
     {
-        private bool _disposed = false;
+
+        /// <summary>
+        /// Indicates if stream is disposed.
+        /// </summary>
+        public bool IsDisposed { get; private set; }
 
         private readonly Stack<IDisposable> _disposables;
 
@@ -46,8 +50,12 @@ namespace Viki.Pipeline.Core.Streams
         {
         }
 
+        /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
+
             EnsureEnumeratorInitialized();
 
             int bytesRead = 0;
@@ -55,7 +63,14 @@ namespace Viki.Pipeline.Core.Streams
             while (bytesRead == 0 && IsEnumeratorStreamAvailable())
             {
                 Stream currentStream = GetEnumeratorCurrent();
-                bytesRead = currentStream.Read(buffer, offset, count);
+                
+                try
+                {
+                    bytesRead = currentStream.Read(buffer, offset, count);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
 
                 if (bytesRead == 0)
                 {
@@ -66,13 +81,14 @@ namespace Viki.Pipeline.Core.Streams
 
             return bytesRead;
         }
-        
-        // Called from Stream's base Dispose
+
+        // Called from Stream's base DisposeAsync()->Close()->Dispose()->[Dispose(bool disposing)]
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!IsDisposed)
             {
-                _disposed = true;
+                IsDisposed = true;
 
                 EnsureEnumeratorInitialized();
 
@@ -92,14 +108,23 @@ namespace Viki.Pipeline.Core.Streams
 
                 base.Dispose(disposing);
             }
-
+            else
+            {
+                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
+            }
         }
 
         private void HandleStreamDisposing(Stream stream)
         {
             if (_disposeStreams)
             {
-                stream?.Dispose();
+                try
+                {
+                    stream?.Dispose();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
             }
         }
 

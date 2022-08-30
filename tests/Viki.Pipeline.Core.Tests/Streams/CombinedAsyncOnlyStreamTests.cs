@@ -6,7 +6,7 @@ using Viki.Pipeline.Core.Streams.Base;
 namespace Viki.Pipeline.Core.Tests.Streams
 {
     [TestFixture]
-    public class CombinedAsyncStreamTests
+    public class CombinedAsyncOnlyStreamTests
     {
         [Test]
         public void HappyFlow()

@@ -8,7 +8,9 @@ using Viki.Pipeline.Core.Streams.Base;
 namespace Viki.Pipeline.Core.Streams
 {
     /// <summary>
-    /// CombinedSyncOnlyStream reads all provided streams only through Read() (no async)
+    /// CombinedStream exposes streams through both sync/async at the same time.
+    /// As result, no IDisposableBags functionality here. it will be replaced with something else more cooler later.
+    /// // TODO: Extend disposing logic where dispose-handler would get passed.. allowing to replace IDisposablesBag and "disposeStreams" and additionally.. synchronize disposes if needed
     /// </summary>
     public class CombinedStream : UnbufferedReadOnlyStreamBase
     {
@@ -19,7 +21,10 @@ namespace Viki.Pipeline.Core.Streams
         private IEnumerator<Stream> _enumerator;
         private bool _streamAvailable;
 
-        private bool _disposed = false;
+        /// <summary>
+        /// Indicates if stream is disposed
+        /// </summary>
+        public bool IsDisposed { get; private set; }
 
         /// <summary>
         /// Create new instance of CombinedStream
@@ -30,9 +35,10 @@ namespace Viki.Pipeline.Core.Streams
         {
         }
 
-        // TODO: Extend disposing logic where disposehandler would get passed.. allowing to replace IDisposablesBag and additionally.. synchronize disposes if needed
+        
         /// <summary>
-        /// Create new instance of CombinedStream
+        /// Create new instance of CombinedStream.
+        /// !!! disposeStreams functionallity is temporary and planned to be refactored/broken/redesigned. feature won't disappear. but instead it will be presented in different-more-flexible form.
         /// </summary>
         /// <param name="streams">Streams to be read from. Enumerable most not contain any nulls. (Enumerable will be iterated only as needed)</param>
         /// <param name="disposeStreams">Dispose passed streams</param>
@@ -42,8 +48,12 @@ namespace Viki.Pipeline.Core.Streams
             _streams = streams ?? throw new ArgumentNullException(nameof(streams));
         }
 
+        /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
+
             EnsureEnumeratorInitialized();
 
             int bytesRead = 0;
@@ -68,9 +78,12 @@ namespace Viki.Pipeline.Core.Streams
 
             return bytesRead;
         }
-
+        /// <inheritdoc />
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
+
             EnsureEnumeratorInitialized();
 
             int bytesRead = 0;
@@ -97,11 +110,12 @@ namespace Viki.Pipeline.Core.Streams
         }
 
         // Called from Stream's base DisposeAsync()->Close()->Dispose()->[Dispose(bool disposing)]
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!IsDisposed)
             {
-                _disposed = true;
+                IsDisposed = true;
 
                 EnsureEnumeratorInitialized();
 
@@ -115,13 +129,18 @@ namespace Viki.Pipeline.Core.Streams
 
                 base.Dispose(disposing);
             }
+            else
+            {
+                throw new ObjectDisposedException(nameof(CombinedStream));
+            }
         }
 
+        /// <inheritdoc />
         public override ValueTask DisposeAsync()
         {
-            if (!_disposed)
+            if (!IsDisposed)
             {
-                _disposed = true;
+                IsDisposed = true;
 
                 EnsureEnumeratorInitialized();
 
@@ -133,7 +152,12 @@ namespace Viki.Pipeline.Core.Streams
 
                 _enumerator.Dispose();
 
-                return base.DisposeAsync();
+                //return base.DisposeAsync();
+                //// kinda still have to call base so it will support properly all the legacy who relies on Close() and so on..
+            }
+            else
+            {
+                throw new ObjectDisposedException(nameof(CombinedStream));
             }
 
             return default;
@@ -192,11 +216,6 @@ namespace Viki.Pipeline.Core.Streams
         private bool IsEnumeratorStreamAvailable()
         {
             return _streamAvailable;
-        }
-
-        public void AddDisposable(Stream disposable)
-        {
-            throw new NotImplementedException();
         }
     }
 }

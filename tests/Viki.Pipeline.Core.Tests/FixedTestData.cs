@@ -30,11 +30,19 @@ namespace Viki.Pipeline.Core.Tests
 
         public static IAsyncEnumerable<Stream> CreateStreamsAsyncEnumerable(params Stream[] additionalStrams) => CreateStreams(additionalStrams)
             .ToAsyncEnumerable();
+        
 
-        public static Stream[] CreateStreams(params Stream[] additionalStrams) => Structure
-            .Select(s => new StreamGenerator(s.Item2, s.Item1))
-            .Concat(additionalStrams)
-            .ToArray();
+        public static Stream[] CreateStreams(params Stream[] additionalStrams)
+        {
+            StreamGenerator disposedStream = new StreamGenerator(0, 0);
+            disposedStream.Dispose();
+
+            return Structure
+                .Select(s => new StreamGenerator(s.Item2, s.Item1))
+                .Concat(additionalStrams)
+                .Concat(Enumerable.Repeat(disposedStream, 1))
+                .ToArray();
+        }
         
         public static async IAsyncEnumerable<Packet<byte>> CreatePackets()
         {
@@ -102,7 +110,52 @@ namespace Viki.Pipeline.Core.Tests
             {
                 stream.Dispose();
             }
+        }
 
+        public static async Task AssertStreamAsync(Stream stream, List<Tuple<byte, int>> structure)
+        {
+            try
+            {
+                int totalBytesRead = 0;
+                byte[] buffer = new byte[85000];
+
+                int bytesRead = await stream.ReadAsync(buffer, 0, 85000);
+                totalBytesRead += bytesRead;
+
+                int currentSymbolCount = 0;
+                int currentScenario = 0;
+
+                while (bytesRead > 0)
+                {
+                    for (int i = 0; i < bytesRead; i++)
+                    {
+                        int currentByte = buffer[i];
+
+                        if (currentByte == structure[currentScenario].Item1)
+                        {
+                            currentSymbolCount++;
+                        }
+                        else
+                        {
+                            Assert.AreEqual(structure[currentScenario].Item2, currentSymbolCount, $"Incorrect symbol [{(char)structure[currentScenario].Item1}] count in data");
+
+                            currentScenario++;
+                            currentSymbolCount = 1;
+                        }
+                    }
+
+                    bytesRead = await stream.ReadAsync(buffer, 0, 85000);
+                    totalBytesRead += bytesRead;
+                }
+
+
+                Assert.AreEqual(structure[currentScenario].Item2, currentSymbolCount, "Incorrect symbol count in data");
+                Assert.AreEqual(structure.Sum(s => s.Item2), totalBytesRead, "Incorrect total length");
+            }
+            finally
+            {
+                stream.Dispose();
+            }
         }
 
         public static void DebugStream(Stream stream)

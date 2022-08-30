@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Viki.Pipeline.Core.Streams;
-using Viki.Pipeline.Core.Streams.Base;
-using Viki.Pipeline.Core.Streams.Interfaces;
+using Viki.Pipeline.Core.Tests.Mocks.Components;
 
 namespace Viki.Pipeline.Core.Tests.Streams
 {
@@ -10,100 +10,223 @@ namespace Viki.Pipeline.Core.Tests.Streams
     public class CombinedStreamTests
     {
         [Test]
-        public void HappyFlow()
+        public void HappyFlowSync()
         {
             CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
 
-            CombinedSyncOnlyStream sut = new CombinedSyncOnlyStream(FixedTestData.CreateStreams(checkDisposeStream));
+            CombinedStream sut = new CombinedStream(FixedTestData.CreateStreams(checkDisposeStream));
 
             FixedTestData.AssertStream(sut, FixedTestData.Structure);
 
             Assert.IsTrue(checkDisposeStream.DisposeCalled);
+            Assert.IsFalse(checkDisposeStream.DisposeAsyncCalled);
         }
+
         [Test]
-        public async Task DisposeAsyncOnReadWorks()
+        public async Task HappyFlowAsync()
         {
             CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
 
-            CombinedStream sut = new CombinedStream(checkDisposeStream);
+            CombinedStream sut = new CombinedStream(FixedTestData.CreateStreams(checkDisposeStream));
 
-            await sut.DisposeAsync();
+            await FixedTestData.AssertStreamAsync(sut, FixedTestData.Structure);
 
             Assert.IsTrue(checkDisposeStream.DisposeAsyncCalled);
-            Assert.IsFalse(checkDisposeStream.DisposeCalled);
         }
 
         [Test]
-        public void DisposeOnReadWorks()
-        {
-            CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
-
-            CombinedStream sut = new CombinedStream(checkDisposeStream);
-
-            sut.Dispose();
-
-            Assert.IsFalse(checkDisposeStream.DisposeAsyncCalled);
-            Assert.IsTrue(checkDisposeStream.DisposeCalled);
-        }
-
-
-        [Test]
-        public void DisposableBagWorks()
-        {
-            CheckDisposeStream checkDispose = new CheckDisposeStream();
-
-            CombinedSyncOnlyStream sut = new CombinedSyncOnlyStream();
-            ((IDisposablesBag)sut).AddDisposable(checkDispose);
-
-            sut.Dispose();
-
-            Assert.IsTrue(checkDispose.DisposeCalled);
-        }
-
-        [Test]
-        public async Task DisposeAsyncWorks()
-        {
-            CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
-            CheckDisposeStream checkDisposeBag = new CheckDisposeStream();
-
-            CombinedSyncOnlyStream sut = new CombinedSyncOnlyStream(checkDisposeStream);
-            ((IDisposablesBag)sut).AddDisposable(checkDisposeBag);
-
-            await sut.DisposeAsync();
-
-            Assert.IsTrue(checkDisposeStream.DisposeCalled);
-            Assert.IsTrue(checkDisposeBag.DisposeCalled);
-        }
-
-        [Test]
-        public void EmptyStream()
+        public void NoStreamsSync()
         {
             byte[] buffer = new byte[16];
 
-            CombinedSyncOnlyStream sut = new CombinedSyncOnlyStream();
+            CombinedStream sut = new CombinedStream();
             Assert.AreEqual(0, sut.Read(buffer, 0, buffer.Length));
+
+            sut.Dispose();
         }
 
-        private class CheckDisposeStream : UnbufferedReadOnlyStreamBase
+        [Test]
+        public async Task NoStreamsAsync()
         {
-            public bool DisposeCalled { get; private set; } = false;
-            public bool DisposeAsyncCalled { get; private set; } = false;
+            byte[] buffer = new byte[16];
 
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                return 0;
-            }
+            CombinedStream sut = new CombinedStream();
+            Assert.AreEqual(0, await sut.ReadAsync(buffer, 0, buffer.Length));
 
-            protected override void Dispose(bool disposing)
-            {
-                DisposeCalled = true;
-            }
+            await sut.DisposeAsync();
+        }
 
-            public override ValueTask DisposeAsync()
-            {
-                DisposeAsyncCalled = true;
-                return default;
-            }
+
+        [Test]
+        public void EmptyStreamsSync()
+        {
+            byte[] buffer = new byte[16];
+
+            CheckDisposeStream emptyStreamA = new CheckDisposeStream();
+            CheckDisposeStream emptyStreamB = new CheckDisposeStream();
+
+            CombinedStream sut = new CombinedStream(emptyStreamA, emptyStreamB);
+            Assert.AreEqual(0, sut.Read(buffer, 0, buffer.Length));
+
+            Assert.IsTrue(emptyStreamA.DisposeCalled);
+            Assert.IsTrue(emptyStreamB.DisposeCalled);
+            Assert.IsFalse(emptyStreamA.DisposeAsyncCalled);
+            Assert.IsFalse(emptyStreamB.DisposeAsyncCalled);
+
+            sut.Dispose();
+        }
+
+        [Test]
+        public async Task EmptyStreamsAsync()
+        {
+            byte[] buffer = new byte[16];
+
+            CheckDisposeStream emptyStreamA = new CheckDisposeStream();
+            CheckDisposeStream emptyStreamB = new CheckDisposeStream();
+
+            CombinedStream sut = new CombinedStream(emptyStreamA, emptyStreamB);
+            Assert.AreEqual(0, await sut.ReadAsync(buffer, 0, buffer.Length));
+            
+            await sut.DisposeAsync();
+
+            Assert.IsTrue(emptyStreamA.DisposeAsyncCalled);
+            Assert.IsTrue(emptyStreamB.DisposeAsyncCalled);
+        }
+
+        [Test]
+        public void DisposeUnreadsSync()
+        {
+            CheckDisposeStream streamA = new CheckDisposeStream(20);
+            CheckDisposeStream streamB = new CheckDisposeStream(20);
+
+            CombinedStream sut = new CombinedStream(streamA, streamB);
+
+            sut.Dispose();
+            
+            Assert.IsTrue(streamA.DisposeCalled);
+            Assert.IsTrue(streamB.DisposeCalled);
+            Assert.IsFalse(streamA.DisposeAsyncCalled);
+            Assert.IsFalse(streamB.DisposeAsyncCalled);
+        }
+
+        [Test]
+        public async Task DisposeUnreadsAsync()
+        {
+            CheckDisposeStream streamA = new CheckDisposeStream(20);
+            CheckDisposeStream streamB = new CheckDisposeStream(20);
+
+            CombinedStream sut = new CombinedStream(streamA, streamB);
+
+            await sut.DisposeAsync();
+
+            Assert.IsTrue(streamA.DisposeAsyncCalled);
+            Assert.IsTrue(streamB.DisposeAsyncCalled);
+        }
+
+        [Test]
+        public void DisposePartiallyUnreadsSync()
+        {
+            byte[] buffer = new byte[30];
+
+            CheckDisposeStream streamA = new CheckDisposeStream(20);
+            CheckDisposeStream streamB = new CheckDisposeStream(20);
+
+            CombinedStream sut = new CombinedStream(streamA, streamB);
+
+            // We allow here for us to know how SUT behaves and write this weird but easy assert.
+            // as otherwise, we would need to reinvent slimmer stream.CopyTo() extension
+            Assert.AreEqual(20, sut.Read(buffer, 0, 30));
+            Assert.AreEqual(10, sut.Read(buffer, 0, 10));
+
+            Assert.IsTrue(streamA.DisposeCalled);
+            Assert.IsFalse(streamB.DisposeCalled);
+
+            sut.Dispose();
+
+            Assert.IsFalse(streamA.DisposeAsyncCalled);
+            Assert.IsTrue(streamB.DisposeCalled);
+
+            Assert.IsFalse(streamB.DisposeAsyncCalled);
+        }
+
+        [Test]
+        public async Task DisposePartiallyUnreadsAsync()
+        {
+            byte[] buffer = new byte[30];
+
+            CheckDisposeStream streamA = new CheckDisposeStream(20);
+            CheckDisposeStream streamB = new CheckDisposeStream(20);
+
+            CombinedStream sut = new CombinedStream(streamA, streamB);
+
+            // We allow here for us to know how SUT behaves and write this weird but easy assert.
+            // as otherwise, we would need to reinvent slimmer stream.CopyToAsync() extension
+            Assert.AreEqual(20, await sut.ReadAsync(buffer, 0, 30));
+            Assert.AreEqual(10, await sut.ReadAsync(buffer, 0, 10));
+
+            Assert.IsTrue(streamA.DisposeAsyncCalled);
+            Assert.IsFalse(streamB.DisposeAsyncCalled);
+
+            await sut.DisposeAsync();
+
+            Assert.IsTrue(streamA.DisposeAsyncCalled);
+            Assert.IsTrue(streamB.DisposeAsyncCalled);
+        }
+
+        [Test]
+        public void DisposedStreamDoesntBreakSync()
+        {
+            StreamGenerator disposedStream = new StreamGenerator(0, 0);
+            disposedStream.Dispose();
+            StreamGenerator validStream = new StreamGenerator(1, 'A');
+
+            CombinedStream sut = new CombinedStream(disposedStream, validStream);
+
+            byte[] buffer = new byte[10];
+
+            Assert.AreEqual(1, sut.Read(buffer, 0, 10));
+            Assert.AreEqual(0, sut.Read(buffer, 0, 10));
+            Assert.AreEqual('A', buffer[0]);
+        }
+
+        [Test]
+        public async Task DisposedStreamDoesntBreakAsync()
+        {
+            StreamGenerator disposedStream = new StreamGenerator(0, 0);
+            disposedStream.Dispose();
+            StreamGenerator validStream = new StreamGenerator(1, 'A');
+
+            CombinedStream sut = new CombinedStream(disposedStream, validStream);
+
+            byte[] buffer = new byte[10];
+
+            Assert.AreEqual(1, await sut.ReadAsync(buffer, 0, 10));
+            Assert.AreEqual(0, await sut.ReadAsync(buffer, 0, 10));
+            Assert.AreEqual('A', buffer[0]);
+        }
+
+        [Test]
+        public async Task DisposedThrows()
+        {
+            CombinedStream sutA = new CombinedStream();
+            CombinedStream sutB = new CombinedStream();
+
+            sutA.Dispose();
+            await sutB.DisposeAsync();
+
+            Assert.Throws<ObjectDisposedException>(() => sutA.Dispose());
+            Assert.Throws<ObjectDisposedException>(() => sutB.Dispose());
+
+            Assert.ThrowsAsync<ObjectDisposedException>(async () => await sutA.DisposeAsync());
+            Assert.ThrowsAsync<ObjectDisposedException>(async () => await sutB.DisposeAsync());
+
+            byte[] buffer = new byte[1];
+
+            Assert.Throws<ObjectDisposedException>(() => _ = sutA.Read(buffer, 0, 1));
+            Assert.Throws<ObjectDisposedException>(() => _ = sutB.Read(buffer, 0, 1));
+
+            Assert.ThrowsAsync<ObjectDisposedException>(async () => _ = await sutA.ReadAsync(buffer, 0, 1));
+            Assert.ThrowsAsync<ObjectDisposedException>(async () => _ = await sutB.ReadAsync(buffer, 0, 1));
         }
     }
 }

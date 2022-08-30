@@ -22,6 +22,12 @@ IPipe&lt;T&gt; - in-memory transport layer.
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Streams\Components\**" />
+    <EmbeddedResource Remove="Streams\Components\**" />
+    <None Remove="Streams\Components\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
@@ -36,10 +42,6 @@ for now nothings stable, anything can be refactored.</PackageReleaseNotes>
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Streams\Components\" />
   </ItemGroup>
 
 </Project>

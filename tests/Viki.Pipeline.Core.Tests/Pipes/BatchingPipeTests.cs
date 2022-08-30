@@ -72,7 +72,6 @@ namespace Viki.Pipeline.Core.Tests.Pipes
             // with unlimited buffer, test run was sitting between 3-16GB of ram usage.
             Task producingTask = RunProducingTask(sut, expectPayloadCount, Int32.MaxValue);
             
-            
 
             TestContext.WriteLine($"Consumer stating {_stopwatch.Elapsed}");
             ConcurrentBag<BatchSummary> results = new ConcurrentBag<BatchSummary>();
