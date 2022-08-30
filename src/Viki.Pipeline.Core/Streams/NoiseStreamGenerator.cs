@@ -14,6 +14,10 @@ namespace Viki.Pipeline.Core.Streams
         private readonly long _size;
         private long _position = 0;
 
+        /// <summary>
+        /// Indicates if stream is disposed.
+        /// </summary>
+        public bool IsDisposed { get; private set; } = false;
 
         static NoiseStreamGenerator()
         {
@@ -40,8 +44,12 @@ namespace Viki.Pipeline.Core.Streams
             _noiseGenerator = new Random(seed);
         }
 
+        /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(StreamGenerator));
+
             long bytesLeftToReadTotal = _size - _position;
 
             if (bytesLeftToReadTotal == 0)
@@ -56,6 +64,20 @@ namespace Viki.Pipeline.Core.Streams
             _position += bytesToRead;
 
             return bytesToRead;
+        }
+
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                IsDisposed = true;
+                base.Dispose(disposing);
+            }
+            else
+            {
+                throw new ObjectDisposedException(nameof(CombinedStream));
+            }
         }
     }
 }
