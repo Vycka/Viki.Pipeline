@@ -10,7 +10,11 @@ namespace Viki.Pipeline.Core.Streams
 {
     // Took idea from https://stackoverflow.com/questions/3879152/how-do-i-concatenate-two-system-io-stream-instances-into-one
     // Made my version of it.
-    public class CombinedAsyncStream : UnbufferedReadOnlyStreamBase, IAsyncDisposablesBag
+
+    /// <summary>
+    /// AsyncOnlyStream reads all provided streams only through ReadAsync()
+    /// </summary>
+    public class CombinedAsyncOnlyStream : UnbufferedReadOnlyStreamBase, IAsyncDisposablesBag
     {
         private bool _disposed = false;
 
@@ -28,7 +32,7 @@ namespace Viki.Pipeline.Core.Streams
         /// </summary>
         /// <param name="streams">Streams to be read from. Enumerable most not contain any nulls. (Enumerable will be iterated only as needed)</param>
         /// <param name="disposeStreams">Dispose passed streams</param>
-        public CombinedAsyncStream(IAsyncEnumerable<Stream> streams, bool disposeStreams = true)
+        public CombinedAsyncOnlyStream(IAsyncEnumerable<Stream> streams, bool disposeStreams = true)
         {
             _disposeStreams = disposeStreams;
             _streams = streams ?? throw new ArgumentNullException(nameof(streams));

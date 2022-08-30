@@ -26,7 +26,7 @@ namespace Viki.Pipeline.Core.Tests
             new((byte)'e', 300007000),
         };
 
-        public static Stream CreateStream() => new CombinedStream(CreateStreams());
+        public static Stream CreateStream() => new CombinedSyncOnlyStream(CreateStreams());
 
         public static IAsyncEnumerable<Stream> CreateStreamsAsyncEnumerable(params Stream[] additionalStrams) => CreateStreams(additionalStrams)
             .ToAsyncEnumerable();

@@ -8,6 +8,11 @@ namespace Viki.Pipeline.Core.Streams
     /// </summary>
     public class StreamGenerator : UnbufferedReadOnlyStreamBase
     {
+        /// <summary>
+        /// Indicates if stream is disposed.
+        /// </summary>
+        public bool IsDisposed { get; private set; } = false;
+
         private readonly long _size;
         private readonly byte _fillValue;
 
@@ -34,6 +39,9 @@ namespace Viki.Pipeline.Core.Streams
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(StreamGenerator));
+
             if (_position >= _size)
                 return 0;
             if ((int)_position + count > _size)

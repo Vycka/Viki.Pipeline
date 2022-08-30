@@ -1,25 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Viki.Pipeline.Core.Streams.Base;
-using Viki.Pipeline.Core.Streams.Interfaces;
 
 namespace Viki.Pipeline.Core.Streams
 {
-    // Took idea from https://stackoverflow.com/questions/3879152/how-do-i-concatenate-two-system-io-stream-instances-into-one
-    // Made my version of it.
-    public class CombinedStream : UnbufferedReadOnlyStreamBase, IDisposablesBag
+    /// <summary>
+    /// CombinedSyncOnlyStream reads all provided streams only through Read() (no async)
+    /// </summary>
+    public class CombinedStream : UnbufferedReadOnlyStreamBase
     {
-        private bool _disposed = false;
-
-        private readonly Stack<IDisposable> _disposables;
-
         private readonly bool _disposeStreams;
+
         private readonly IEnumerable<Stream> _streams;
 
         private IEnumerator<Stream> _enumerator;
         private bool _streamAvailable;
 
+        private bool _disposed = false;
+
+        /// <summary>
+        /// Create new instance of CombinedStream
+        /// </summary>
+        /// <param name="streams">Streams to be read from. Array most not contain any null values. All streams in will be disposed.</param>
+        public CombinedStream(params Stream[] streams)
+            : this(streams, true)
+        {
+        }
+
+        // TODO: Extend disposing logic where disposehandler would get passed.. allowing to replace IDisposablesBag and additionally.. synchronize disposes if needed
         /// <summary>
         /// Create new instance of CombinedStream
         /// </summary>
@@ -29,17 +40,6 @@ namespace Viki.Pipeline.Core.Streams
         {
             _disposeStreams = disposeStreams;
             _streams = streams ?? throw new ArgumentNullException(nameof(streams));
-
-            _disposables = new Stack<IDisposable>();
-        }
-
-        /// <summary>
-        /// Create new instance of CombinedStream
-        /// </summary>
-        /// <param name="streams">Streams to be read from. Array most not contain any null values. All streams in will be disposed.</param>
-        public CombinedStream(params Stream[] streams)
-            : this(streams, true)
-        {
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -51,7 +51,13 @@ namespace Viki.Pipeline.Core.Streams
             while (bytesRead == 0 && IsEnumeratorStreamAvailable())
             {
                 Stream currentStream = GetEnumeratorCurrent();
-                bytesRead = currentStream.Read(buffer, offset, count);
+                try
+                {
+                    bytesRead = currentStream.Read(buffer, offset, count);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
 
                 if (bytesRead == 0)
                 {
@@ -62,8 +68,35 @@ namespace Viki.Pipeline.Core.Streams
 
             return bytesRead;
         }
-        
-        // Called from Stream's base Dispose
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            EnsureEnumeratorInitialized();
+
+            int bytesRead = 0;
+
+            while (bytesRead == 0 && IsEnumeratorStreamAvailable())
+            {
+                Stream currentStream = GetEnumeratorCurrent();
+                try
+                {
+                    bytesRead = await currentStream.ReadAsync(buffer, offset, count, cancellationToken);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+
+                if (bytesRead == 0)
+                {
+                    await HandleStreamDisposingAsync(currentStream);
+                    AdvanceEnumerator();
+                }
+            }
+
+            return bytesRead;
+        }
+
+        // Called from Stream's base DisposeAsync()->Close()->Dispose()->[Dispose(bool disposing)]
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -80,23 +113,60 @@ namespace Viki.Pipeline.Core.Streams
 
                 _enumerator.Dispose();
 
-                // IDisposablesBag part
-                while (_disposables.Count != 0)
-                {
-                    _disposables.Pop()?.Dispose();
-                }
-
                 base.Dispose(disposing);
             }
+        }
 
+        public override ValueTask DisposeAsync()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                EnsureEnumeratorInitialized();
+
+                while (IsEnumeratorStreamAvailable())
+                {
+                    HandleStreamDisposingAsync(GetEnumeratorCurrent());
+                    AdvanceEnumerator();
+                }
+
+                _enumerator.Dispose();
+
+                return base.DisposeAsync();
+            }
+
+            return default;
         }
 
         private void HandleStreamDisposing(Stream stream)
         {
             if (_disposeStreams)
             {
-                stream?.Dispose();
+                try
+                {
+                    stream?.Dispose();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
             }
+        }
+        private ValueTask HandleStreamDisposingAsync(Stream stream)
+        {
+            ValueTask result = default;
+            if (_disposeStreams && stream != null)
+            {
+                try
+                {
+                    result = stream.DisposeAsync();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+            }
+
+            return result;
         }
 
         private void EnsureEnumeratorInitialized()
@@ -124,10 +194,9 @@ namespace Viki.Pipeline.Core.Streams
             return _streamAvailable;
         }
 
-        /// <inheritdoc />
-        void IDisposablesBag.AddDisposable(IDisposable disposable)
+        public void AddDisposable(Stream disposable)
         {
-            _disposables.Push(disposable);
+            throw new NotImplementedException();
         }
     }
 }

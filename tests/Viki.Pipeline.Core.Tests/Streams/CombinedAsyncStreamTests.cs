@@ -13,7 +13,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         {
             CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
 
-            CombinedAsyncStream sut = new CombinedAsyncStream(FixedTestData.CreateStreamsAsyncEnumerable(checkDisposeStream));
+            CombinedAsyncOnlyStream sut = new CombinedAsyncOnlyStream(FixedTestData.CreateStreamsAsyncEnumerable(checkDisposeStream));
 
             FixedTestData.AssertStream(sut, FixedTestData.Structure);
 
@@ -25,7 +25,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         {
             CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
 
-            CombinedAsyncStream sut = new CombinedAsyncStream(FixedTestData.CreateStreamsAsyncEnumerable(checkDisposeStream));
+            CombinedAsyncOnlyStream sut = new CombinedAsyncOnlyStream(FixedTestData.CreateStreamsAsyncEnumerable(checkDisposeStream));
 
             sut.Dispose();
             
@@ -37,7 +37,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         {
             CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
 
-            CombinedAsyncStream sut = new CombinedAsyncStream(FixedTestData.CreateStreamsAsyncEnumerable(checkDisposeStream));
+            CombinedAsyncOnlyStream sut = new CombinedAsyncOnlyStream(FixedTestData.CreateStreamsAsyncEnumerable(checkDisposeStream));
 
             await sut.DisposeAsync();
             sut.Dispose();

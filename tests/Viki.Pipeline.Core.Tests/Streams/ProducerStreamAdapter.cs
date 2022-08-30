@@ -14,7 +14,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         [Test]
         public void HappyFlow()
         {
-            Stream testData = new CombinedStream(FixedTestData.CreateStreams());
+            Stream testData = new CombinedSyncOnlyStream(FixedTestData.CreateStreams());
 
             BatchingPipe<Packet<byte>> packetsPipe = new BatchingPipe<Packet<byte>>();
             Stream sut = packetsPipe.ToWriteOnlyStream();
