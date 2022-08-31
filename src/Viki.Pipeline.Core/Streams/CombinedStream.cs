@@ -142,11 +142,15 @@ namespace Viki.Pipeline.Core.Streams
             {
                 IsDisposed = true;
 
+                List<Task> disposeTasks = new List<Task>();
+
                 EnsureEnumeratorInitialized();
 
                 while (IsEnumeratorStreamAvailable())
                 {
-                    HandleStreamDisposingAsync(GetEnumeratorCurrent());
+                    ValueTask disposeTask = HandleStreamDisposingAsync(GetEnumeratorCurrent());
+                    disposeTasks.Add(disposeTask.AsTask());
+
                     AdvanceEnumerator();
                 }
 
@@ -154,13 +158,13 @@ namespace Viki.Pipeline.Core.Streams
 
                 //return base.DisposeAsync();
                 //// kinda still have to call base so it will support properly all the legacy who relies on Close() and so on..
+                return new ValueTask(Task.WhenAll(disposeTasks.ToArray()));
             }
             else
             {
                 throw new ObjectDisposedException(nameof(CombinedStream));
             }
 
-            return default;
         }
 
         private void HandleStreamDisposing(Stream stream)

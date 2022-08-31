@@ -62,7 +62,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         {
             byte[] buffer = new byte[16];
 
-            CheckDisposeStream emptyStreamA = new CheckDisposeStream();
+            CheckDisposeStream emptyStreamA = new CheckDisposeStream(0, TimeSpan.FromMilliseconds(300));
             CheckDisposeStream emptyStreamB = new CheckDisposeStream();
 
             CombinedStream sut = new CombinedStream(emptyStreamA, emptyStreamB);
@@ -81,7 +81,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         {
             byte[] buffer = new byte[16];
 
-            CheckDisposeStream emptyStreamA = new CheckDisposeStream();
+            CheckDisposeStream emptyStreamA = new CheckDisposeStream(0, TimeSpan.FromMilliseconds(300));
             CheckDisposeStream emptyStreamB = new CheckDisposeStream();
 
             CombinedStream sut = new CombinedStream(emptyStreamA, emptyStreamB);
@@ -97,8 +97,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
         public void DisposeUnreadsSync()
         {
             CheckDisposeStream streamA = new CheckDisposeStream(20);
-            CheckDisposeStream streamB = new CheckDisposeStream(20);
-
+            CheckDisposeStream streamB = new CheckDisposeStream(20, TimeSpan.FromMilliseconds(300));
             CombinedStream sut = new CombinedStream(streamA, streamB);
 
             sut.Dispose();
@@ -113,12 +112,14 @@ namespace Viki.Pipeline.Core.Tests.Streams
         public async Task DisposeUnreadsAsync()
         {
             CheckDisposeStream streamA = new CheckDisposeStream(20);
-            CheckDisposeStream streamB = new CheckDisposeStream(20);
+            CheckDisposeStream streamB = new CheckDisposeStream(20, TimeSpan.FromMilliseconds(300));
 
             CombinedStream sut = new CombinedStream(streamA, streamB);
 
             await sut.DisposeAsync();
 
+            Assert.IsFalse(streamA.DisposeCalled);
+            Assert.IsFalse(streamB.DisposeCalled);
             Assert.IsTrue(streamA.DisposeAsyncCalled);
             Assert.IsTrue(streamB.DisposeAsyncCalled);
         }
@@ -129,7 +130,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
             byte[] buffer = new byte[30];
 
             CheckDisposeStream streamA = new CheckDisposeStream(20);
-            CheckDisposeStream streamB = new CheckDisposeStream(20);
+            CheckDisposeStream streamB = new CheckDisposeStream(20, TimeSpan.FromMilliseconds(300));
 
             CombinedStream sut = new CombinedStream(streamA, streamB);
 
@@ -155,7 +156,7 @@ namespace Viki.Pipeline.Core.Tests.Streams
             byte[] buffer = new byte[30];
 
             CheckDisposeStream streamA = new CheckDisposeStream(20);
-            CheckDisposeStream streamB = new CheckDisposeStream(20);
+            CheckDisposeStream streamB = new CheckDisposeStream(20, TimeSpan.FromMilliseconds(300));
 
             CombinedStream sut = new CombinedStream(streamA, streamB);
 
