@@ -181,12 +181,12 @@ namespace Viki.Pipeline.Core.Tests.Streams
             disposedStream.Dispose();
             StreamGenerator validStream = new StreamGenerator(1, 'A');
 
-            CombinedStream sut = new CombinedStream(disposedStream, validStream);
+            CombinedStream sut = new CombinedStream(validStream, disposedStream);
 
             byte[] buffer = new byte[10];
 
             Assert.AreEqual(1, sut.Read(buffer, 0, 10));
-            Assert.AreEqual(0, sut.Read(buffer, 0, 10));
+            Assert.Throws<ObjectDisposedException>(() => _ = sut.Read(buffer, 0, 10));
             Assert.AreEqual('A', buffer[0]);
         }
 
@@ -197,12 +197,12 @@ namespace Viki.Pipeline.Core.Tests.Streams
             disposedStream.Dispose();
             StreamGenerator validStream = new StreamGenerator(1, 'A');
 
-            CombinedStream sut = new CombinedStream(disposedStream, validStream);
+            CombinedStream sut = new CombinedStream(validStream, disposedStream);
 
             byte[] buffer = new byte[10];
 
             Assert.AreEqual(1, await sut.ReadAsync(buffer, 0, 10));
-            Assert.AreEqual(0, await sut.ReadAsync(buffer, 0, 10));
+            Assert.ThrowsAsync<ObjectDisposedException>(async () => _ = await sut.ReadAsync(buffer, 0, 10));
             Assert.AreEqual('A', buffer[0]);
         }
 

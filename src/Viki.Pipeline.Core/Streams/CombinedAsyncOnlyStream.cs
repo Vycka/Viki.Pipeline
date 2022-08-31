@@ -146,13 +146,7 @@ namespace Viki.Pipeline.Core.Streams
             ValueTask result = default;
             if (_disposeStreams && stream != null)
             {
-                try
-                {
-                    result = stream.DisposeAsync();
-                }
-                catch (ObjectDisposedException)
-                {
-                }
+                result = stream.DisposeAsync();
             }
 
             return result;

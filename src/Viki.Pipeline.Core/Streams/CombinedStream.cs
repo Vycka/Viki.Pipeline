@@ -38,7 +38,7 @@ namespace Viki.Pipeline.Core.Streams
         
         /// <summary>
         /// Create new instance of CombinedStream.
-        /// !!! disposeStreams functionallity is temporary and planned to be refactored/broken/redesigned. feature won't disappear. but instead it will be presented in different-more-flexible form.
+        /// !!! disposeStreams functionality is temporary and planned to be refactored/broken/redesigned. feature won't disappear. but instead it will be presented in different-more-flexible form.
         /// </summary>
         /// <param name="streams">Streams to be read from. Enumerable most not contain any nulls. (Enumerable will be iterated only as needed)</param>
         /// <param name="disposeStreams">Dispose passed streams</param>
@@ -61,13 +61,8 @@ namespace Viki.Pipeline.Core.Streams
             while (bytesRead == 0 && IsEnumeratorStreamAvailable())
             {
                 Stream currentStream = GetEnumeratorCurrent();
-                try
-                {
-                    bytesRead = currentStream.Read(buffer, offset, count);
-                }
-                catch (ObjectDisposedException)
-                {
-                }
+
+                bytesRead = currentStream.Read(buffer, offset, count);
 
                 if (bytesRead == 0)
                 {
@@ -91,13 +86,9 @@ namespace Viki.Pipeline.Core.Streams
             while (bytesRead == 0 && IsEnumeratorStreamAvailable())
             {
                 Stream currentStream = GetEnumeratorCurrent();
-                try
-                {
-                    bytesRead = await currentStream.ReadAsync(buffer, offset, count, cancellationToken);
-                }
-                catch (ObjectDisposedException)
-                {
-                }
+
+                bytesRead = await currentStream.ReadAsync(buffer, offset, count, cancellationToken);
+
 
                 if (bytesRead == 0)
                 {
@@ -140,8 +131,6 @@ namespace Viki.Pipeline.Core.Streams
             {
                 IsDisposed = true;
 
-
-
                 EnsureEnumeratorInitialized();
 
                 while (IsEnumeratorStreamAvailable())
@@ -153,8 +142,6 @@ namespace Viki.Pipeline.Core.Streams
                 }
 
                 _enumerator.Dispose();
-
-                
             }
 
             disposeTasks.Add(base.DisposeAsync().AsTask());
@@ -166,13 +153,7 @@ namespace Viki.Pipeline.Core.Streams
         {
             if (_disposeStreams)
             {
-                try
-                {
-                    stream?.Dispose();
-                }
-                catch (ObjectDisposedException)
-                {
-                }
+                stream?.Dispose();
             }
         }
         private ValueTask HandleStreamDisposingAsync(Stream stream)
@@ -180,13 +161,7 @@ namespace Viki.Pipeline.Core.Streams
             ValueTask result = default;
             if (_disposeStreams && stream != null)
             {
-                try
-                {
-                    result = stream.DisposeAsync();
-                }
-                catch (ObjectDisposedException)
-                {
-                }
+                result = stream.DisposeAsync();
             }
 
             return result;

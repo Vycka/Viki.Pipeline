@@ -64,13 +64,7 @@ namespace Viki.Pipeline.Core.Streams
             {
                 Stream currentStream = GetEnumeratorCurrent();
                 
-                try
-                {
-                    bytesRead = currentStream.Read(buffer, offset, count);
-                }
-                catch (ObjectDisposedException)
-                {
-                }
+                bytesRead = currentStream.Read(buffer, offset, count);
 
                 if (bytesRead == 0)
                 {

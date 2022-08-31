@@ -40,7 +40,7 @@ namespace Viki.Pipeline.Core.Tests
             return Structure
                 .Select(s => new StreamGenerator(s.Item2, s.Item1))
                 .Concat(additionalStrams)
-                .Concat(Enumerable.Repeat(disposedStream, 1))
+                //.Concat(Enumerable.Repeat(disposedStream, 1))
                 .ToArray();
         }
         
