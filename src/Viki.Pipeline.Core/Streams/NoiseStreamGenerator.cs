@@ -74,10 +74,6 @@ namespace Viki.Pipeline.Core.Streams
                 IsDisposed = true;
                 base.Dispose(disposing);
             }
-            else
-            {
-                throw new ObjectDisposedException(nameof(CombinedStream));
-            }
         }
     }
 }

@@ -108,10 +108,6 @@ namespace Viki.Pipeline.Core.Streams
 
                 base.Dispose(disposing);
             }
-            else
-            {
-                throw new ObjectDisposedException(nameof(CombinedSyncOnlyStream));
-            }
         }
 
         private void HandleStreamDisposing(Stream stream)

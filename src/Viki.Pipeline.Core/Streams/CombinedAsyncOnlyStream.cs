@@ -104,10 +104,6 @@ namespace Viki.Pipeline.Core.Streams
                 DisposeAsyncInner().GetAwaiter().GetResult();
                 base.Dispose(disposing);
             }
-            else
-            {
-                throw new ObjectDisposedException(nameof(CombinedAsyncOnlyStream));
-            }
         }
 
         /// <inheritdoc />
@@ -117,10 +113,6 @@ namespace Viki.Pipeline.Core.Streams
             {
                 await DisposeAsyncInner();
                 await base.DisposeAsync();
-            }
-            else
-            {
-                throw new ObjectDisposedException(nameof(CombinedAsyncOnlyStream));
             }
         }
 
