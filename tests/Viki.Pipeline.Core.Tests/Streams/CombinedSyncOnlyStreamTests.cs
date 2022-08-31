@@ -62,20 +62,19 @@ namespace Viki.Pipeline.Core.Tests.Streams
         }
 
         [Test]
-        public async Task DisposedThrows()
+        public async Task AccessingDisposed()
         {
-            CheckDisposeStream checkDisposeStream = new CheckDisposeStream();
-
             CombinedSyncOnlyStream sutA = new CombinedSyncOnlyStream();
             CombinedSyncOnlyStream sutB = new CombinedSyncOnlyStream();
-            sutA.DisposeAsync();
-            sutB.Dispose();
 
-            Assert.Throws<ObjectDisposedException>(() => sutA.Dispose());
-            Assert.Throws<ObjectDisposedException>(() => sutB.Dispose());
+            sutA.Dispose();
+            await sutB.DisposeAsync();
 
-            Assert.ThrowsAsync<ObjectDisposedException>(async () => await sutA.DisposeAsync());
-            Assert.ThrowsAsync<ObjectDisposedException>(async () => await sutB.DisposeAsync());
+            Assert.DoesNotThrow(() => sutA.Dispose());
+            Assert.DoesNotThrow(() => sutB.Dispose());
+
+            Assert.DoesNotThrowAsync(async () => await sutA.DisposeAsync());
+            Assert.DoesNotThrowAsync(async () => await sutB.DisposeAsync());
 
             byte[] buffer = new byte[1];
 
