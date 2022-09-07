@@ -48,7 +48,7 @@ namespace Viki.Pipeline.Core.Streams
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (IsDisposed)
-                throw new ObjectDisposedException(nameof(StreamGenerator));
+                throw new ObjectDisposedException(nameof(NoiseStreamGenerator));
 
             long bytesLeftToReadTotal = _size - _position;
 
