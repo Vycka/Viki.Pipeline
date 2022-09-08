@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Viki.Pipeline.Core.Streams;
+using Viki.Pipeline.Core.Streams.Mocks;
 
-namespace Viki.Pipeline.Core.Tests.Streams
+namespace Viki.Pipeline.Core.Tests.Streams.Mocks
 {
     [TestFixture]
     public class StreamGeneratorTests

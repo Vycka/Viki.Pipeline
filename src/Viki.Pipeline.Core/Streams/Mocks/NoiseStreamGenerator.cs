@@ -1,7 +1,7 @@
 ﻿using System;
 using Viki.Pipeline.Core.Streams.Base;
 
-namespace Viki.Pipeline.Core.Streams
+namespace Viki.Pipeline.Core.Streams.Mocks
 {
     /// <summary>
     /// Generates stream with pseudo-random noise data

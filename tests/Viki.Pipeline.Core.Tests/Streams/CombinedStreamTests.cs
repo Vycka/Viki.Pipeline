@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Viki.Pipeline.Core.Streams;
+using Viki.Pipeline.Core.Streams.Mocks;
 using Viki.Pipeline.Core.Tests.Mocks.Components;
 
 namespace Viki.Pipeline.Core.Tests.Streams

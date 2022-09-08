@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Viki.Pipeline.Core.Extensions;
 using Viki.Pipeline.Core.Packets;
 using Viki.Pipeline.Core.Streams;
+using Viki.Pipeline.Core.Streams.Mocks;
 
 namespace Viki.Pipeline.Core.Tests
 {

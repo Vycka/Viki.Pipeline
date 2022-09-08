@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Viki.Pipeline.Core.Streams;
+using Viki.Pipeline.Core.Streams.Mocks;
 
 namespace Viki.Pipeline.Core.Tests.Mocks.Components
 {

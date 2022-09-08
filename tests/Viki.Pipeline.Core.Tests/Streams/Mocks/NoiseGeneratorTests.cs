@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using NUnit.Framework;
-using Viki.Pipeline.Core.Streams;
+using Viki.Pipeline.Core.Streams.Mocks;
 
-namespace Viki.Pipeline.Core.Tests.Streams
+namespace Viki.Pipeline.Core.Tests.Streams.Mocks
 {
     [TestFixture]
     public class NoiseGeneratorTests
