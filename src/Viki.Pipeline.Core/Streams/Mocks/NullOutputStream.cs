@@ -20,7 +20,7 @@ namespace Viki.Pipeline.Core.Streams.Mocks
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (IsDisposed)
-                throw new ObjectDisposedException(nameof(StreamGenerator));
+                throw new ObjectDisposedException(nameof(NullOutputStream));
 
             _bytesWritten += count;
         }

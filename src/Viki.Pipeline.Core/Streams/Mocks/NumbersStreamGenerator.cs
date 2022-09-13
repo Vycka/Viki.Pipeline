@@ -49,21 +49,33 @@ namespace Viki.Pipeline.Core.Streams.Mocks
                 throw new ObjectDisposedException(nameof(NumbersGeneratorStream));
 
             long bytesLeftToReadTotal = _size - _position;
-
             if (bytesLeftToReadTotal == 0)
                 return 0;
 
             int bytesToRead = (int)Math.Min(bytesLeftToReadTotal, count);
             for (int i = 0; i < bytesToRead; i++)
             {
-                if (_position + i - _numberDividerPosition > 7 && _position + i + 1 != _size)
+                int bufferWritePosition = offset + i;
+
+                long globalWritePosition = _position + i;
+                long positionFromLastDivider = globalWritePosition - _numberDividerPosition;
+
+                // add comma if number is big enough and next byte is not the end of stream.
+                // (so not to end with comma in generated sequence of numbers... e.g."123,123,")
+                if (positionFromLastDivider > 7 && globalWritePosition + 1 != _size)
                 {
-                    buffer[i + offset] = (byte)',';
-                    _numberDividerPosition = _position + i;
+                    buffer[bufferWritePosition] = (byte)',';
+                    _numberDividerPosition = globalWritePosition;
                 }
+                // prevent numbers from beginning with "0" ar sometimes janky json tools don't like it (e.g 0009 can fail some random validator)
+                else if (positionFromLastDivider == 1) 
+                {
+                    buffer[bufferWritePosition] = (byte)_noiseGenerator.Next('1', '9' + 1);
+                }
+                // business as usual x]
                 else
                 {
-                    buffer[i + offset] = (byte)_noiseGenerator.Next('0', '9' + 1);
+                    buffer[bufferWritePosition] = (byte)_noiseGenerator.Next('0', '9' + 1);
                 }
             }
 

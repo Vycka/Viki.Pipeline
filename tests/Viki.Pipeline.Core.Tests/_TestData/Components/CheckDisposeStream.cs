@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Viki.Pipeline.Core.Streams;
 using Viki.Pipeline.Core.Streams.Mocks;
 
-namespace Viki.Pipeline.Core.Tests.Mocks.Components
+namespace Viki.Pipeline.Core.Tests._TestData.Components
 {
     public class CheckDisposeStream : StreamGenerator
     {
