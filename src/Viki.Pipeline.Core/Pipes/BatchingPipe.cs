@@ -88,9 +88,12 @@ namespace Viki.Pipeline.Core.Pipes
         }
 
         /// <inheritdoc />
-        public void Produce(IEnumerable<T> item)
+        public void Produce(IEnumerable<T> items)
         {
-            _writeOnlyList.AddRange(item);
+            foreach (T item in items)
+            {
+                _writeOnlyList.Add(item);
+            }
         }
 
         /// <inheritdoc />
